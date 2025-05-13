@@ -7,51 +7,60 @@ function escapeXML(str = '') {
     .replace(/>/g, '&gt;');
 }
 
+function formatTimeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+  const intervals = [
+    { label: 'y', seconds: 31536000 },
+    { label: 'mo', seconds: 2592000 },
+    { label: 'w', seconds: 604800 },
+    { label: 'd', seconds: 86400 },
+    { label: 'h', seconds: 3600 },
+    { label: 'm', seconds: 60 },
+  ];
+  for (const { label, seconds: sec } of intervals) {
+    const count = Math.floor(seconds / sec);
+    if (count >= 1) return `${count}${label}`;
+  }
+  return 'now';
+}
+
 export default async function handler(req, res) {
   let comments = [];
   try {
     comments = await getComments(10) || [];
   } catch (err) {
     console.error('ERROR in comments.svg:', err);
-    // Fall back to empty array
   }
 
-  const rowHeight = 30;
-  const headerHeight = 40;
-  const padding = 20;
-  const width = 500;
-  const height = headerHeight + comments.length * rowHeight + padding;
+  const rowHeight = 28;
+  const padding = 16;
+  const width = 480;
+  const height = comments.length * rowHeight + padding * 2;
 
-  const lines = comments.map((c, i) => `
-    <rect x="0" y="${headerHeight + i * rowHeight}" width="${width}" height="${rowHeight}" class="row-${i % 2}" />
-    <text x="${padding}" y="${headerHeight + i * rowHeight + rowHeight / 1.5}" class="text">${escapeXML(c.name)}: ${escapeXML(c.message)}</text>
-  `).join('');
+  const lines = comments.map((c, i) => {
+    const timeAgo = formatTimeAgo(c.created_at);
+    return `
+    <text x="${padding}" y="${padding + (i + 1) * rowHeight - 8}" class="comment">
+      <tspan class="name">${escapeXML(c.name)}</tspan>
+      <tspan class="sep">:</tspan>
+      <tspan class="msg"> ${escapeXML(c.message)}</tspan>
+      <tspan class="time" dx="8">${timeAgo}</tspan>
+    </text>`;
+  }).join('');
 
   const svg = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  <defs>
-    <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0F172A" />
-      <stop offset="100%" stop-color="#1E293B" />
-    </linearGradient>
-  </defs>
   <style>
-    .bg { fill: url(#bg-grad); }
-    .header-bg { fill: #4F46E5; opacity: 0.8; }
-    .header-text { font-family: 'Open Sans', sans-serif; fill: #FFF; font-size: 18px; font-weight: bold; }
-    .text { font-family: 'Open Sans', monospace; fill: #E2E8F0; font-size: 14px; }
-    .row-0 { fill: rgba(30, 41, 59, 0.5); }
-    .row-1 { fill: rgba(30, 41, 59, 0.2); }
+    <![CDATA[
+    .comment { font-family: 'Open Sans', sans-serif; font-size: 14px; fill: #e2e2e2; }
+    .name { font-family: monospace; fill: #ffe033; font-weight: bold; }
+    .sep { fill: #e2e2e2; }
+    .msg { fill: #cbd5e1; }
+    .time { fill: #94a3b8; font-size: 12px; font-family: monospace; }
+    ]]>
   </style>
-
-  <!-- Background -->
-  <rect class="bg" width="100%" height="100%" rx="12" />
-
-  <!-- Header -->
-  <rect class="header-bg" x="0" y="0" width="${width}" height="${headerHeight}" rx="12" />
-  <text x="${padding}" y="${headerHeight / 1.5}" class="header-text">Comentários Recentes</text>
-
-  <!-- Comment rows -->
   ${lines}
 </svg>`;
 
