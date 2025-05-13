@@ -21,7 +21,7 @@ const getTimeAgo = (timestamp) => {
       return `${interval}${unit[0]}`;
     }
   }
-  return 'Agora';
+  return 'Now';
 };
 
 export default function Home() {
@@ -103,7 +103,7 @@ export default function Home() {
       <header style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', backdropFilter: theme.blur,
         padding: '1.5rem', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ color: theme.primary, margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>💬 Comentários Lucy</h1>
+          <h1 style={{ color: theme.primary, margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>💬 Lucy's profile comments</h1>
         </div>
       </header>
 
@@ -111,22 +111,22 @@ export default function Home() {
         <section style={{ backgroundColor: theme.secondary, borderRadius: '16px', padding: '2rem', marginBottom: '2rem', backdropFilter: theme.blur, border: '1px solid rgba(255,255,255,0.1)' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Seu Nome:</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Your name:</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)} maxLength={30} required />
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Comentário:</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Comment:</label>
               <textarea ref={textareaRef} value={message} onChange={e => { setMessage(e.target.value); setCharCount(e.target.value.length); }}
                 maxLength={MAX_CHARS} style={{ minHeight: '120px', overflowY: 'hidden' }} rows="1" required />
               <div style={{ textAlign: 'right', fontSize: '0.875rem', color: '#94A3B8', marginTop: '0.5rem' }}>{charCount}/{MAX_CHARS}</div>
             </div>
-            <button type="submit" style={{ background: `linear-gradient(145deg, ${theme.primary}, #4338CA)`, color: 'white', border: 'none', padding: '1rem', borderRadius: '8px', width: '100%', fontWeight: 600, fontSize: '1rem' }}>Publicar Comentário</button>
+            <button type="submit" style={{ background: `linear-gradient(145deg, ${theme.primary}, #4338CA)`, color: 'white', border: 'none', padding: '1rem', borderRadius: '8px', width: '100%', fontWeight: 600, fontSize: '1rem' }}>Add comment</button>
           </form>
         </section>
 
         <section>
           {comments.length === 0 ? (
-            <p style={{ color: '#64748B', textAlign: 'center', padding: '2rem' }}>Seja o primeiro a comentar!</p>
+            <p style={{ color: '#64748B', textAlign: 'center', padding: '2rem' }}>Be the first to comment!</p>
           ) : (
             comments.map(comment => (
               <div key={comment.id || comment.created_at} style={{ backgroundColor: theme.secondary, borderRadius: '12px', padding: '1.5rem', marginBottom: '1rem', backdropFilter: theme.blur, border: '1px solid rgba(255,255,255,0.1)' }}>
