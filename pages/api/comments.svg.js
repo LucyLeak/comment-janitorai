@@ -7,8 +7,9 @@ function escapeXML(str = '') {
     .replace(/>/g, '&gt;');
 }
 
+// Formata o timestamp adicionando 'Z' para interpretar como UTC
 function formatTimeAgo(dateString) {
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'Z');
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   const intervals = [
@@ -33,7 +34,7 @@ function wrapText(text, maxCharsPerLine = 40) {
   let currentLine = '';
 
   words.forEach(word => {
-    // Se palavra excede o limite, quebra a palavra
+    // Quebra palavras muito longas
     while (word.length > maxCharsPerLine) {
       const slice = word.slice(0, maxCharsPerLine - 1) + '-';
       if (currentLine) {
@@ -43,7 +44,6 @@ function wrapText(text, maxCharsPerLine = 40) {
       lines.push(slice);
       word = word.slice(maxCharsPerLine - 1);
     }
-    // Se adicionar palavra excede o limite, nova linha
     if ((currentLine + word).length > maxCharsPerLine) {
       lines.push(currentLine.trim());
       currentLine = '';
@@ -58,14 +58,14 @@ function wrapText(text, maxCharsPerLine = 40) {
 export default async function handler(req, res) {
   let comments = [];
   try {
-    // Puxa até 50 comentários
+    // Busca até 50 comentários
     comments = await getComments(50) || [];
   } catch (err) {
     console.error('ERROR in comments.svg:', err);
   }
 
   const padding = 16;
-  const width = 330; // largura máxima
+  const width = 330;
   const lineHeight = 20;
   const verticalSpacing = 10;
 
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
 
-    const wrapped = wrapText(message, 40); // caracteres por linha
+    const wrapped = wrapText(message, 40);
 
     // Primeira linha com nome e timestamp
     renderedLines.push(
@@ -88,7 +88,7 @@ export default async function handler(req, res) {
       </text>`
     );
 
-    // Linhas subsequentes somente mensagem
+    // Linhas subsequentes
     for (let i = 1; i < wrapped.length; i++) {
       yOffset += lineHeight;
       renderedLines.push(
@@ -98,7 +98,6 @@ export default async function handler(req, res) {
       );
     }
 
-    // Espaço antes do próximo comentário
     yOffset += verticalSpacing + lineHeight;
   });
 
