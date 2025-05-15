@@ -27,7 +27,7 @@ function formatTimeAgo(dateString) {
 }
 
 // Quebra o texto levando em conta palavras muito longas
-function wrapText(text, maxCharsPerLine = 30) {
+function wrapText(text, maxCharsPerLine = 20) {
   const words = text.split(' ');
   const lines = [];
   let currentLine = '';
