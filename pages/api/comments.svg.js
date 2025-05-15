@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
 
-    const wrapped = wrapText(message, 37);
+    const wrapped = wrapText(message, 30);
 
     // Primeira linha com nome e timestamp
     renderedLines.push(
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
   <style>
     <![CDATA[
     .comment { font-family: 'Open Sans', sans-serif; font-size: 14px; fill: #e2e2e2; }
-    .name { font-family: 'Open Sans', sans-serif; fill: #ffe033; font-weight: bold; }
+    .name { font-family: monospace; fill: #ffe033; font-weight: bold; }
     .sep { fill: #e2e2e2; }
     .msg { fill: #cbd5e1; }
     .time { fill: #94a3b8; font-size: 12px; font-family: monospace; }
