@@ -7,9 +7,8 @@ function escapeXML(str = '') {
     .replace(/>/g, '&gt;');
 }
 
-// Formata o timestamp adicionando 'Z' para interpretar como UTC
 function formatTimeAgo(dateString) {
-  const date = new Date(dateString + 'Z');
+  const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   const intervals = [
