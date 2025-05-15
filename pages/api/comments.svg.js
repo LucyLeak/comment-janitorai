@@ -107,7 +107,7 @@ export default async function handler(req, res) {
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background: transparent">
   <style>
     <![CDATA[
-    .comment { font-family: 'Open Sans', sans-serif; font-size: 14px; fill: #e2e2e2; }
+    .comment { font-family: monospace; font-size: 14px; fill: #e2e2e2; }
     .name { font-family: monospace; fill: #ffe033; font-weight: bold; }
     .sep { fill: #e2e2e2; }
     .msg { fill: #cbd5e1; }
