@@ -8,7 +8,7 @@ function escapeXML(str = '') {
 }
 
 function formatTimeAgo(dateString) {
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'Z');
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   const intervals = [
@@ -26,12 +26,10 @@ function formatTimeAgo(dateString) {
   return 'now';
 }
 
-// Quebra o texto com base no tamanho máximo (aproximado por caracteres)
 function wrapText(text, maxCharsPerLine = 40) {
   const words = text.split(' ');
   const lines = [];
   let currentLine = '';
-
   for (const word of words) {
     if ((currentLine + word).length > maxCharsPerLine) {
       lines.push(currentLine.trim());
@@ -39,7 +37,6 @@ function wrapText(text, maxCharsPerLine = 40) {
     }
     currentLine += word + ' ';
   }
-
   if (currentLine) lines.push(currentLine.trim());
   return lines;
 }
@@ -47,48 +44,45 @@ function wrapText(text, maxCharsPerLine = 40) {
 export default async function handler(req, res) {
   let comments = [];
   try {
-    comments = await getComments(10) || [];
+    comments = await getComments(50) || [];
   } catch (err) {
     console.error('ERROR in comments.svg:', err);
   }
 
   const padding = 16;
-  const width = 330; // largura máxima
+  const width = 330;
   const lineHeight = 20;
   const verticalSpacing = 10;
 
   let yOffset = padding;
-  const renderedLines = [];
+  const rendered = [];
 
   for (const comment of comments) {
     const timeAgo = formatTimeAgo(comment.created_at);
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
+    const wrapped = wrapText(message, 40);
+    // calculate indent for subsequent lines (approximate)
+    const indentPx = (name.length + 2) * 8;
 
-    const wrapped = wrapText(message, 40); // Limite aproximado de caracteres por linha
+    // start tspan for first line
+    let textElement = `<text x="${padding}" y="${yOffset}" class="comment">`;
+    textElement += `<tspan class="name">${name}</tspan><tspan class="sep">:</tspan>`;
+    textElement += `<tspan class="msg"> ${wrapped[0]}</tspan>`;
+    textElement += `<tspan class="time" dx="8">${timeAgo}</tspan>`;
 
-    renderedLines.push(`
-      <text x="${padding}" y="${yOffset}" class="comment">
-        <tspan class="name">${name}</tspan><tspan class="sep">:</tspan>
-        <tspan class="msg"> ${wrapped[0]}</tspan>
-        <tspan class="time" dx="8">${timeAgo}</tspan>
-      </text>
-    `);
+    // subsequent lines
+    wrapped.slice(1).forEach((line) => {
+      textElement += `<tspan x="${padding + indentPx}" dy="${lineHeight}">${line}</tspan>`;
+    });
+    textElement += `</text>`;
+    rendered.push(textElement);
 
-    for (let i = 1; i < wrapped.length; i++) {
-      yOffset += lineHeight;
-      renderedLines.push(`
-        <text x="${padding}" y="${yOffset}" class="comment">
-          <tspan class="msg">${wrapped[i]}</tspan>
-        </text>
-      `);
-    }
-
-    yOffset += verticalSpacing + lineHeight;
+    // update yOffset: one lineHeight per line + verticalSpacing
+    yOffset += wrapped.length * lineHeight + verticalSpacing;
   }
 
   const height = yOffset;
-
   const svg = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background: transparent">
   <style>
@@ -100,7 +94,7 @@ export default async function handler(req, res) {
     .time { fill: #94a3b8; font-size: 12px; font-family: monospace; }
     ]]>
   </style>
-  ${renderedLines.join('\n')}
+  ${rendered.join('\n')}
 </svg>`;
 
   res.setHeader('Content-Type', 'image/svg+xml');
