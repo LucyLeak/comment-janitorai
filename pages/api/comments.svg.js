@@ -33,8 +33,8 @@ function wrapText(text, maxCharsPerLine = 40) {
   let currentLine = '';
 
   words.forEach(word => {
-    // Quebra palavras muito longas
     while (word.length > maxCharsPerLine) {
+      // corta a palavra em pedaços com hífen no fim
       const slice = word.slice(0, maxCharsPerLine - 1) + '-';
       if (currentLine) {
         lines.push(currentLine.trim());
@@ -43,13 +43,14 @@ function wrapText(text, maxCharsPerLine = 40) {
       lines.push(slice);
       word = word.slice(maxCharsPerLine - 1);
     }
+    // Verifica se palavra cabe na linha atual
     if ((currentLine + word).length > maxCharsPerLine) {
       lines.push(currentLine.trim());
       currentLine = '';
     }
     currentLine += word + ' ';
   });
-
+  
   if (currentLine) lines.push(currentLine.trim());
   return lines;
 }
