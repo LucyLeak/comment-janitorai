@@ -27,7 +27,7 @@ function formatTimeAgo(dateString) {
 }
 
 // Quebra o texto levando em conta palavras muito longas
-function wrapText(text, maxCharsPerLine = 40) {
+function wrapText(text, maxCharsPerLine = 30) {
   const words = text.split(' ');
   const lines = [];
   let currentLine = '';
@@ -50,7 +50,7 @@ function wrapText(text, maxCharsPerLine = 40) {
     }
     currentLine += word + ' ';
   });
-  
+
   if (currentLine) lines.push(currentLine.trim());
   return lines;
 }
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
 
-    const wrapped = wrapText(message, 40);
+    const wrapped = wrapText(message, 37);
 
     // Primeira linha com nome e timestamp
     renderedLines.push(
