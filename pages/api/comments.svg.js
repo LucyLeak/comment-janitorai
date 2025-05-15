@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
 
-    const wrapped = wrapText(message, 30);
+    const wrapped = wrapText(message, 35);
 
     // Primeira linha com nome e timestamp
     renderedLines.push(
