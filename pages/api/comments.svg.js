@@ -125,11 +125,13 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-cache, max-age=0');
   res.status(200).send(svg);
 
-  const heartIcon = comments.liked_by_owner
-  ? `<tspan x="${width - padding - 16}" y="${yOffset}" class="heart">❤️</tspan>`: '';
+  const heartIcon = comment.liked_by_owner
+    ? `<image href="https://files.catbox.moe/r7rk7d.png" x="${padding - 24}" y="${yOffset - 14}" width="20" height="20" clip-path="circle(10)" />`
+    : '';
 
   renderedLines.push(
-    `<text x="${padding}" y="${yOffset}" class="comment">
+    `${avatar}
+    <text x="${padding}" y="${yOffset}" class="comment">
       <tspan class="name">${name}</tspan><tspan class="sep">:</tspan>
       <tspan class="msg"> ${wrapped[0]}</tspan>
       <tspan class="time" dx="8">${timeAgo}</tspan>
