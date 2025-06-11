@@ -125,7 +125,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-cache, max-age=0');
   res.status(200).send(svg);
 
-  const heartIcon = comment.liked_by_owner
+  const heartIcon = comments.liked_by_owner
     ? `<image href="https://files.catbox.moe/r7rk7d.png" x="${padding - 24}" y="${yOffset - 14}" width="20" height="20" clip-path="circle(10)" />`
     : '';
 
