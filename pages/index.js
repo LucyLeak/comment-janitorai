@@ -129,14 +129,52 @@ export default function Home() {
             <p style={{ color: '#64748B', textAlign: 'center', padding: '2rem' }}>Be the first to comment!</p>
           ) : (
             comments.map(comment => (
-              <div key={comment.id || comment.created_at} style={{ backgroundColor: theme.secondary, borderRadius: '12px', padding: '1.5rem', marginBottom: '1rem', backdropFilter: theme.blur, border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div
+                key={comment.id || comment.created_at}
+                style={{
+                  position: 'relative',
+                  backgroundColor: theme.secondary,
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  marginBottom: '1rem',
+                  backdropFilter: theme.blur,
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}
+              >
+                {/* Botão de like */}
+                <button
+                  onClick={async () => {
+                    await fetch(`/api/comments/${comment.id}/like`, { method: 'POST' });
+                    const res = await fetch('/api/comments.json');
+                    const data = await res.json();
+                    setComments(data.comments || []);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    right: '1rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    color: comment.liked_by_owner ? 'red' : '#64748B',
+                    padding: 0,
+                  }} aria-label="Give heart">❤️</button>
+
+                {/* Conteúdo do comentário */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                      <h3 style={{ color: theme.text, margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{comment.name}</h3>
-                      <span style={{ color: '#64748B', fontSize: '0.875rem' }}>{getTimeAgo(comment.created_at)}</span>
+                      <h3 style={{ color: theme.text, margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>
+                        {comment.name}
+                      </h3>
+                      <span style={{ color: '#64748B', fontSize: '0.875rem' }}>
+                        {getTimeAgo(comment.created_at)}
+                      </span>
                     </div>
-                    <p style={{ margin: 0, color: '#94A3B8', lineHeight: 1.5 }}>{comment.message}</p>
+                    <p style={{ margin: 0, color: '#94A3B8', lineHeight: 1.5 }}>
+                      {comment.message}
+                    </p>
                   </div>
                 </div>
               </div>
