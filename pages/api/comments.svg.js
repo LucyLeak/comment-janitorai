@@ -1,5 +1,4 @@
 import { getComments } from '../../lib/db';
-import { createCanvas } from 'canvas';
 
 function escapeXML(str = '') {
   return String(str)
@@ -9,7 +8,7 @@ function escapeXML(str = '') {
 }
 
 function formatTimeAgo(dateString) {
-  const date = new Date(dateString + 'Z');
+  const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   const intervals = [
@@ -27,29 +26,38 @@ function formatTimeAgo(dateString) {
   return 'now';
 }
 
-// Quebra de texto baseada em largura real usando canvas
-function wrapTextPixels(text, maxWidth, ctx) {
+// Aproxima a largura do texto (super compatível com Vercel)
+function approximateTextWidth(text, fontSize = 14) {
+  const wideCharRegex = /[^\u0000-\u00ff]/g;
+  const wideChars = (text.match(wideCharRegex) || []).length;
+  const narrowChars = text.length - wideChars;
+
+  return (wideChars * fontSize) + (narrowChars * (fontSize * 0.6));
+}
+
+function wrapTextPixels(text, maxWidth, prefixWidth = 0, fontSize = 14) {
+  const words = text.split(' ');
   const lines = [];
-  let line = '';
-  for (const ch of text) {
-    const testLine = line + ch;
-    if (ctx.measureText(testLine).width > maxWidth) {
-      lines.push(line);
-      line = ch;
+  let currentLine = '';
+  let currentWidth = prefixWidth;
+
+  words.forEach(word => {
+    const wordWidth = approximateTextWidth(word + ' ', fontSize);
+    if (currentWidth + wordWidth > maxWidth) {
+      lines.push(currentLine.trim());
+      currentLine = word + ' ';
+      currentWidth = approximateTextWidth(word + ' ', fontSize);
     } else {
-      line = testLine;
+      currentLine += word + ' ';
+      currentWidth += wordWidth;
     }
-  }
-  if (line) lines.push(line);
+  });
+
+  if (currentLine) lines.push(currentLine.trim());
   return lines;
 }
 
 export default async function handler(req, res) {
-  // prepara canvas para medir texto
-  const canvas = createCanvas(0, 0);
-  const ctx = canvas.getContext('2d');
-  ctx.font = '14px "Open Sans"';
-
   let comments = [];
   try {
     comments = await getComments(50) || [];
@@ -68,36 +76,31 @@ export default async function handler(req, res) {
   comments.forEach(comment => {
     const timeAgo = formatTimeAgo(comment.created_at);
     const name = escapeXML(comment.name);
-    const prefix = `${name}: `;
     const message = escapeXML(comment.message);
 
-    // calcula largura disponível para mensagem
-    const prefixWidth = ctx.measureText(prefix).width;
-    const timeWidth = ctx.measureText(timeAgo).width + ctx.measureText(' ').width;
-    const msgMaxWidth = width - padding*2 - prefixWidth - timeWidth;
+    // Estimar largura do nome + separador ":"
+    const nameWidth = approximateTextWidth(`${name}: `, 14);
 
-    // quebra mensagem em linhas
-    const msgLines = wrapTextPixels(message, msgMaxWidth, ctx);
+    const wrapped = wrapTextPixels(message, width - 2 * padding, nameWidth);
 
-    // primeira linha com prefixo e timestamp
-    const firstLine = msgLines.shift() || '';
+    // Primeira linha com nome e timestamp
     renderedLines.push(
       `<text x="${padding}" y="${yOffset}" class="comment">
-        <tspan class="name">${prefix}</tspan>
-        <tspan class="msg">${firstLine}</tspan>
-        <tspan class="time" dx="4">${timeAgo}</tspan>
+        <tspan class="name">${name}</tspan><tspan class="sep">:</tspan>
+        <tspan class="msg"> ${wrapped[0]}</tspan>
+        <tspan class="time" dx="8">${timeAgo}</tspan>
       </text>`
     );
 
-    // linhas subsequentes só mensagem
-    msgLines.forEach(lineText => {
+    // Linhas subsequentes
+    for (let i = 1; i < wrapped.length; i++) {
       yOffset += lineHeight;
       renderedLines.push(
-        `<text x="${padding + prefixWidth}" y="${yOffset}" class="comment">
-          <tspan class="msg">${lineText}</tspan>
+        `<text x="${padding}" y="${yOffset}" class="comment">
+          <tspan class="msg">${wrapped[i]}</tspan>
         </text>`
       );
-    });
+    }
 
     yOffset += verticalSpacing + lineHeight;
   });
