@@ -83,9 +83,15 @@ export default async function handler(req, res) {
 
     const wrapped = wrapTextPixels(message, width - 2 * padding, nameWidth);
 
-    // Primeira linha com nome e timestamp
+    // Renderizar ícone de coração se o comentário tiver liked_by_owner = true
+    const heartIcon = comment.liked_by_owner
+      ? `<image href="https://files.catbox.moe/r7rk7d.png" x="${padding - 24}" y="${yOffset - 14}" width="20" height="20" clip-path="circle(10)" />`
+      : '';
+
+    // Renderizar comentário
     renderedLines.push(
-      `<text x="${padding}" y="${yOffset}" class="comment">
+      `${heartIcon}
+      <text x="${padding}" y="${yOffset}" class="comment">
         <tspan class="name">${name}</tspan><tspan class="sep">:</tspan>
         <tspan class="msg"> ${wrapped[0]}</tspan>
         <tspan class="time" dx="8">${timeAgo}</tspan>
@@ -124,18 +130,4 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'no-cache, max-age=0');
   res.status(200).send(svg);
-
-  const heartIcon = comments.liked_by_owner
-    ? `<image href="https://files.catbox.moe/r7rk7d.png" x="${padding - 24}" y="${yOffset - 14}" width="20" height="20" clip-path="circle(10)" />`
-    : '';
-
-  renderedLines.push(
-    `${avatar}
-    <text x="${padding}" y="${yOffset}" class="comment">
-      <tspan class="name">${name}</tspan><tspan class="sep">:</tspan>
-      <tspan class="msg"> ${wrapped[0]}</tspan>
-      <tspan class="time" dx="8">${timeAgo}</tspan>
-      ${heartIcon}
-    </text>`
-  );
 }
