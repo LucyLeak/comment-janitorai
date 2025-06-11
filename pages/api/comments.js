@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     try {
       const { name, message } = req.body;
       if (!name || !message) {
-        return res.status(400).json({ error: 'Nome e mensagem são obrigatórios.' });
+        return res.status(400).json({ error: 'Name and message are required.' });
       }
       const { error } = await supabase
         .from('comments')
