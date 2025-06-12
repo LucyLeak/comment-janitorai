@@ -85,12 +85,7 @@ export default async function handler(req, res) {
 
     // Renderizar ícone de coração se o comentário tiver liked_by_owner = true
     const heartIcon = comment.liked_by_owner
-    ? `<svg x="${padding - 24}" y="${yOffset - 14}" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#FF4D4D" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
-          2 6.5 3.5 5 5.5 5c1.54 0 3.04.99 3.57 2.36h1.87
-          C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5
-          0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-      </svg>`
+    ? `<image href="https://files.catbox.moe/r7rk7d.png" x="${padding - 24}" y="${yOffset - 14}" width="20" height="20" clip-path="circle(10)" />`
     : '';
 
     // Renderizar comentário
@@ -99,7 +94,7 @@ export default async function handler(req, res) {
       <text x="${padding}" y="${yOffset}" class="comment">
         <tspan class="name">${name}</tspan><tspan class="sep">:</tspan>
         <tspan class="msg"> ${wrapped[0]}</tspan>
-        <tspan class="time" dx="8">${timeAgo}${heartIcon}</tspan>
+        <tspan class="time" dx="8">${timeAgo} ${heartIcon}</tspan>
       </text>`
     );
 
