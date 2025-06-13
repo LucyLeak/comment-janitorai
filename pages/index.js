@@ -75,37 +75,52 @@ export default function Home() {
     }}>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background: transparent; }
         * { box-sizing:border-box; }
         a { color:#FFE033; text-decoration:none; }
-        header { background:rgba(15, 23, 42, 0.19); padding:2em 1em; position:sticky; top:0; border-bottom:1px solid rgba(255,255,255,0.1); }
-        #PageTitle { font-size:3em; margin:0; }
-        .PageModule { background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.05); margin:1em 0; padding:1em; border-radius:8px; }
-        .PageModule>h2 { font-size:1.25rem; margin:0 0 .5em; }
+        nav.navbar { background:rgba(0,0,0,0.8); padding:.8em 1em; border-bottom:1px solid #444; }
+        nav.navbar a { font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#8af; }
+        #PageTitle { font-family:'Press Start 2P',sans-serif; font-size:3em; margin:0; }
+        .comment-rules { background:rgba(0,0,0,0.7); border:1px dashed #555; color:#ddd; padding:.8em; margin:1em; font-size:.9em; }
+        .comment-rules ul { margin:0; padding-left:1.2em; }
+        .comment-rules li { margin-bottom:.3em; }
+        .PageModule { background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.05); margin:1em; padding:1em; border-radius:8px; }
         label { display:block; margin-bottom:.5em; font-weight:500; }
-        input,textarea { width:100%; padding:.75rem; margin-bottom:1em; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:4px; color:#e2e2e2; font-family:inherit; }
-        button { background:#FFE033; color:#0F172A; border:none; padding:.75rem 1.5rem; border-radius:4px; font-weight:600; cursor:pointer; }
-        .CommentCard { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:1em; margin-bottom:1em; }
-        .CommentCard h3 { margin:0; font-size:1.125rem; color:#FFE033; }
-        .CommentCard time { font-size:.875rem; color:#94A3B8; }
-        .CommentCard p { margin:.5em 0 0; color:#cbd5e1; line-height:1.5; }
+        input,textarea { width:100%; padding:.75rem; margin-bottom:1em; background:rgba(34,34,34,0.8); border:1px solid #444; color:#ccc; border-radius:4px; }
+        button { background:#39c; color:#fff; border:1px solid #238; padding:.6em 1em; font-family:'Press Start 2P',sans-serif; cursor:pointer; }
+        #comments-list { list-style:none; margin:0 1em 1em; padding:0; }
+        .comment { background:rgba(0,0,0,0.6); border:1px solid #444; padding:.7em; margin-bottom:.8em; border-radius:4px; }
+        .comment .author { display:block; font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#8af; margin-bottom:.4em; text-transform:uppercase; }
+        .comment .text { margin:.4em 0; font-size:.95em; color:#eee; }
+        .comment .time { font-size:.8em; color:#999; }
       `}</style>
 
-      <header>
-        <div id="MainContentWrapper">
-          <h1 id="PageTitle">💬 Lucy's Profile Comments</h1>
-        </div>
-      </header>
+      <nav className="navbar">
+        <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak">
+          Voltar ao meu perfil
+        </a>
+      </nav>
 
       <main id="MainContentWrapper" style={{ maxWidth:'800px', margin:'2rem auto', padding:'0 1.5rem' }}>
+
+        <div className="comment-rules">
+          <ul>
+            <li>Seja respeitoso</li>
+            <li>Comentários ofensivos serão ignorados</li>
+            <li>Use no máximo 100 caracteres</li>
+          </ul>
+        </div>
+
         <section className="PageModule">
-          <h2>Add a Comment</h2>
+          <h2 style={{fontFamily:'Press Start 2P',color:'#FFE033'}}>Add a Comment</h2>
           <form onSubmit={handleSubmit}>
             <label>Your Name</label>
             <input
               type="text" value={name}
               onChange={e => setName(e.target.value)}
               maxLength={30} required />
+
             <label>Comment</label>
             <textarea
               ref={textareaRef}
@@ -115,25 +130,27 @@ export default function Home() {
               rows={3}
               required />
             <div style={{ textAlign:'right', color:'#94A3B8' }}>{charCount}/{MAX_CHARS}</div>
+
             <button type="submit">Post Comment</button>
           </form>
         </section>
 
         <section className="PageModule">
-          <h2>Comments</h2>
-          {comments.length === 0
-            ? <p>Be the first to comment!</p>
-            : comments.map(c => (
-              <div key={c.id || c.created_at} className="CommentCard">
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
-                  <h3>{c.name}</h3>
-                  <time>{getTimeAgo(c.created_at)}</time>
-                </div>
-                <p>{c.message}</p>
-              </div>
-            ))
-          }
+          <h2 style={{fontFamily:'Press Start 2P',color:'#FFE033'}}>Comments</h2>
+          <ul id="comments-list">
+            {comments.length === 0
+              ? <p>Be the first to comment!</p>
+              : comments.map(c => (
+                <li key={c.id || c.created_at} className="comment">
+                  <span className="author">{c.name}</span>
+                  <p className="text">{c.message}</p>
+                  <span className="time">{getTimeAgo(c.created_at)}</span>
+                </li>
+              ))
+            }
+          </ul>
         </section>
+
       </main>
     </div>
   );
