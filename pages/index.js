@@ -65,10 +65,17 @@ export default function Home() {
   };
 
   return (
-    <div id="MainCore" style={{ background: '#0F172A', minHeight: '100vh', paddingBottom: '4rem' }}>
+    <div id="MainCore" style={{
+      backgroundImage: 'url(https://ella.janitorai.com/background-image/Z2X3TqVV3-lUNjwqlFGIx.webp)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      minHeight: '100vh',
+      paddingBottom: '4rem'
+    }}>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
-        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background:#0F172A; }
+        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background: transparent; }
         * { box-sizing:border-box; }
         a { color:#FFE033; text-decoration:none; }
         header { background:rgba(15,23,42,0.8); padding:2em 1em; position:sticky; top:0; border-bottom:1px solid rgba(255,255,255,0.1); }
