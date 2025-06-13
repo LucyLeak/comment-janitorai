@@ -98,7 +98,7 @@ export default function Home() {
 
       <nav className="navbar">
         <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak">
-          Voltar ao meu perfil
+          Back to my profile
         </a>
       </nav>
 
@@ -106,9 +106,7 @@ export default function Home() {
 
         <div className="comment-rules">
           <ul>
-            <li>Seja respeitoso</li>
-            <li>Comentários ofensivos serão ignorados</li>
-            <li>Use no máximo 100 caracteres</li>
+            <li>Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
           </ul>
         </div>
 
