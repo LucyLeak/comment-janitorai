@@ -1,124 +1,133 @@
-import { getComments } from '../../lib/db';
-import { createCanvas } from 'canvas';
+import { useState, useEffect, useRef } from 'react';
 
-function escapeXML(str = '') {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-function formatTimeAgo(dateString) {
-  const date = new Date(dateString + 'Z');
+const getTimeAgo = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
-  const intervals = [
-    { label: 'y', seconds: 31536000 },
-    { label: 'mo', seconds: 2592000 },
-    { label: 'w', seconds: 604800 },
-    { label: 'd', seconds: 86400 },
-    { label: 'h', seconds: 3600 },
-    { label: 'm', seconds: 60 },
-  ];
-  for (const { label, seconds: sec } of intervals) {
+  const intervals = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60,
+  };
+  for (const [unit, sec] of Object.entries(intervals)) {
     const count = Math.floor(seconds / sec);
-    if (count >= 1) return `${count}${label}`;
+    if (count >= 1) return `${count}${unit[0]}`;
   }
-  return 'now';
-}
+  return 'Now';
+};
 
-// Quebra de texto baseada em largura real usando canvas
-function wrapTextPixels(text, maxWidth, ctx) {
-  const lines = [];
-  let line = '';
-  for (const ch of text) {
-    const testLine = line + ch;
-    if (ctx.measureText(testLine).width > maxWidth) {
-      lines.push(line);
-      line = ch;
-    } else {
-      line = testLine;
+export default function Home() {
+  const [comments, setComments] = useState([]);
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const [charCount, setCharCount] = useState(0);
+  const textareaRef = useRef(null);
+  const MAX_CHARS = 100;
+
+  // auto-expand textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
+  }, [message]);
 
-export default async function handler(req, res) {
-  // prepara canvas para medir texto
-  const canvas = createCanvas(0, 0);
-  const ctx = canvas.getContext('2d');
-  ctx.font = '14px "Open Sans"';
+  // fetch comments
+  useEffect(() => {
+    fetch('/api/comments.json')
+      .then(res => res.json())
+      .then(data => setComments(data.comments || []))
+      .catch(console.error);
+  }, []);
 
-  let comments = [];
-  try {
-    comments = await getComments(50) || [];
-  } catch (err) {
-    console.error('ERROR in comments.svg:', err);
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const trimmedName = name.trim().slice(0, 30);
+    const trimmedMessage = message.trim().slice(0, MAX_CHARS);
+    if (!trimmedName || !trimmedMessage) return;
 
-  const padding = 16;
-  const width = 330;
-  const lineHeight = 20;
-  const verticalSpacing = 10;
-
-  let yOffset = padding;
-  const renderedLines = [];
-
-  comments.forEach(comment => {
-    const timeAgo = formatTimeAgo(comment.created_at);
-    const name = escapeXML(comment.name);
-    const prefix = `${name}: `;
-    const message = escapeXML(comment.message);
-
-    // calcula largura disponível para mensagem
-    const prefixWidth = ctx.measureText(prefix).width;
-    const timeWidth = ctx.measureText(timeAgo).width + ctx.measureText(' ').width;
-    const msgMaxWidth = width - padding*2 - prefixWidth - timeWidth;
-
-    // quebra mensagem em linhas
-    const msgLines = wrapTextPixels(message, msgMaxWidth, ctx);
-
-    // primeira linha com prefixo e timestamp
-    const firstLine = msgLines.shift() || '';
-    renderedLines.push(
-      `<text x="${padding}" y="${yOffset}" class="comment">
-        <tspan class="name">${prefix}</tspan>
-        <tspan class="msg">${firstLine}</tspan>
-        <tspan class="time" dx="4">${timeAgo}</tspan>
-      </text>`
-    );
-
-    // linhas subsequentes só mensagem
-    msgLines.forEach(lineText => {
-      yOffset += lineHeight;
-      renderedLines.push(
-        `<text x="${padding + prefixWidth}" y="${yOffset}" class="comment">
-          <tspan class="msg">${lineText}</tspan>
-        </text>`
-      );
+    await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmedName, message: trimmedMessage }),
     });
+    // reload
+    const res = await fetch('/api/comments.json');
+    const data = await res.json();
+    setComments(data.comments || []);
+    setName('');
+    setMessage('');
+    setCharCount(0);
+  };
 
-    yOffset += verticalSpacing + lineHeight;
-  });
+  return (
+    <div id="MainCore" style={{ background: '#0F172A', minHeight: '100vh', paddingBottom: '4rem' }}>
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
+        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background:#0F172A; }
+        * { box-sizing:border-box; }
+        a { color:#FFE033; text-decoration:none; }
+        header { background:rgba(15,23,42,0.8); padding:2em 1em; position:sticky; top:0; border-bottom:1px solid rgba(255,255,255,0.1); }
+        #PageTitle { font-size:3em; margin:0; }
+        .PageModule { background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.05); margin:1em 0; padding:1em; border-radius:8px; }
+        .PageModule>h2 { font-size:1.25rem; margin:0 0 .5em; }
+        label { display:block; margin-bottom:.5em; font-weight:500; }
+        input,textarea { width:100%; padding:.75rem; margin-bottom:1em; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:4px; color:#e2e2e2; font-family:inherit; }
+        button { background:#FFE033; color:#0F172A; border:none; padding:.75rem 1.5rem; border-radius:4px; font-weight:600; cursor:pointer; }
+        .CommentCard { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:1em; margin-bottom:1em; }
+        .CommentCard h3 { margin:0; font-size:1.125rem; color:#FFE033; }
+        .CommentCard time { font-size:.875rem; color:#94A3B8; }
+        .CommentCard p { margin:.5em 0 0; color:#cbd5e1; line-height:1.5; }
+      `}</style>
 
-  const height = yOffset;
+      <header>
+        <div id="MainContentWrapper">
+          <h1 id="PageTitle">💬 Lucy's Profile Comments</h1>
+        </div>
+      </header>
 
-  const svg = `<?xml version="1.0"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background: transparent">
-  <style>
-    <![CDATA[
-    .comment { font-family: 'Open Sans', sans-serif; font-size: 14px; fill: #e2e2e2; }
-    .name { font-family: monospace; fill: #ffe033; font-weight: bold; }
-    .sep { fill: #e2e2e2; }
-    .msg { fill: #cbd5e1; }
-    .time { fill: #94a3b8; font-size: 12px; font-family: monospace; }
-    ]]>
-  </style>
-  ${renderedLines.join('\n')}
-</svg>`;
+      <main id="MainContentWrapper" style={{ maxWidth:'800px', margin:'2rem auto', padding:'0 1.5rem' }}>
+        <section className="PageModule">
+          <h2>Add a Comment</h2>
+          <form onSubmit={handleSubmit}>
+            <label>Your Name</label>
+            <input
+              type="text" value={name}
+              onChange={e => setName(e.target.value)}
+              maxLength={30} required />
+            <label>Comment</label>
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={e => { setMessage(e.target.value); setCharCount(e.target.value.length); }}
+              maxLength={MAX_CHARS}
+              rows={3}
+              required />
+            <div style={{ textAlign:'right', color:'#94A3B8' }}>{charCount}/{MAX_CHARS}</div>
+            <button type="submit">Post Comment</button>
+          </form>
+        </section>
 
-  res.setHeader('Content-Type', 'image/svg+xml');
-  res.setHeader('Cache-Control', 'no-cache, max-age=0');
-  res.status(200).send(svg);
+        <section className="PageModule">
+          <h2>Comments</h2>
+          {comments.length === 0
+            ? <p>Be the first to comment!</p>
+            : comments.map(c => (
+              <div key={c.id || c.created_at} className="CommentCard">
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+                  <h3>{c.name}</h3>
+                  <time>{getTimeAgo(c.created_at)}</time>
+                </div>
+                <p>{c.message}</p>
+              </div>
+            ))
+          }
+        </section>
+      </main>
+    </div>
+  );
 }
