@@ -28,7 +28,6 @@ export default function Home() {
   const textareaRef = useRef(null);
   const MAX_CHARS = 100;
 
-  // auto-expand textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -36,7 +35,6 @@ export default function Home() {
     }
   }, [message]);
 
-  // fetch comments
   useEffect(() => {
     fetch('/api/comments.json')
       .then(res => res.json())
@@ -55,7 +53,7 @@ export default function Home() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: trimmedName, message: trimmedMessage }),
     });
-    // reload
+
     const res = await fetch('/api/comments.json');
     const data = await res.json();
     setComments(data.comments || []);
@@ -71,38 +69,41 @@ export default function Home() {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
       minHeight: '100vh',
-      paddingBottom: '4rem'
+      paddingBottom: '4rem',
+      backgroundColor: '#1b1118'
     }}>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background: transparent; }
+        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background: #1b1118; }
         * { box-sizing:border-box; }
         a { color:#FFE033; text-decoration:none; }
-        nav.navbar { background:rgba(0,0,0,0.8); padding:.8em 1em; border-bottom:1px solid #444; }
-        nav.navbar a { font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#8af; }
+        nav.navbar { background:rgba(27, 17, 24, 0.9); padding:.8em 1em; border-bottom:1px solid #3a2a34; }
+        nav.navbar a { font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#FFE033; }
+        nav.navbar a:hover { text-decoration:underline; }
         #PageTitle { font-family:'Press Start 2P',sans-serif; font-size:3em; margin:0; }
-        .comment-rules { background:rgba(0,0,0,0.7); border:1px dashed #555; color:#ddd; padding:.8em; margin:1em; font-size:.9em; }
+        .comment-rules { background:rgba(27, 17, 24, 0.9); border:1px dashed #555; color:#ddd; padding:.8em; margin:1em; font-size:.9em; }
         .comment-rules ul { margin:0; padding-left:1.2em; }
         .comment-rules li { margin-bottom:.3em; }
-        .PageModule { background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.05); margin:1em; padding:1em; border-radius:8px; }
+        .PageModule { background:rgba(27, 17, 24, 0.8); border:1px solid rgba(255,255,255,0.05); margin:1em; padding:1em; border-radius:8px; }
         label { display:block; margin-bottom:.5em; font-weight:500; }
         input,textarea { width:100%; padding:.75rem; margin-bottom:1em; background:rgba(34,34,34,0.8); border:1px solid #444; color:#ccc; border-radius:4px; }
-        button { background:#39c; color:#fff; border:1px solid #238; padding:.6em 1em; font-family:'Press Start 2P',sans-serif; cursor:pointer; }
+        button { background:#FFE033; color:#1b1118; border:none; padding:.6em 1em; font-family:'Press Start 2P',sans-serif; cursor:pointer; }
+        button:hover { background:#ffd700; }
         #comments-list { list-style:none; margin:0 1em 1em; padding:0; }
-        .comment { background:rgba(0,0,0,0.6); border:1px solid #444; padding:.7em; margin-bottom:.8em; border-radius:4px; }
-        .comment .author { display:block; font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#8af; margin-bottom:.4em; text-transform:uppercase; }
-        .comment .text { margin:.4em 0; font-size:.95em; color:#eee; }
+        .comment { background:rgba(27, 17, 24, 0.9); border:1px solid #3a2a34; padding:.7em; margin-bottom:.8em; border-radius:4px; }
+        .comment .author { display:block; font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#FFE033; margin-bottom:.4em; text-transform:uppercase; }
+        .comment .text { margin:.4em 0; font-size:.95em; color:#e2e2e2; }
         .comment .time { font-size:.8em; color:#999; }
       `}</style>
 
       <nav className="navbar">
-        <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak">
-          Back to my profile
+        <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">
+          ⬅ Back to my profile
         </a>
       </nav>
 
-      <main id="MainContentWrapper" style={{ maxWidth:'800px', margin:'2rem auto', padding:'0 1.5rem' }}>
+      <main id="MainContentWrapper" style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 1.5rem' }}>
 
         <div className="comment-rules">
           <ul>
@@ -111,7 +112,7 @@ export default function Home() {
         </div>
 
         <section className="PageModule">
-          <h2 style={{fontFamily:'Press Start 2P',color:'#FFE033'}}>Add a Comment</h2>
+          <h2 style={{ fontFamily: 'Press Start 2P', color: '#FFE033' }}>Add a Comment</h2>
           <form onSubmit={handleSubmit}>
             <label>Your Name</label>
             <input
@@ -127,14 +128,14 @@ export default function Home() {
               maxLength={MAX_CHARS}
               rows={3}
               required />
-            <div style={{ textAlign:'right', color:'#94A3B8' }}>{charCount}/{MAX_CHARS}</div>
+            <div style={{ textAlign: 'right', color: '#94A3B8' }}>{charCount}/{MAX_CHARS}</div>
 
             <button type="submit">Post Comment</button>
           </form>
         </section>
 
         <section className="PageModule">
-          <h2 style={{fontFamily:'Press Start 2P',color:'#FFE033'}}>Comments</h2>
+          <h2 style={{ fontFamily: 'Press Start 2P', color: '#FFE033' }}>Comments</h2>
           <ul id="comments-list">
             {comments.length === 0
               ? <p>Be the first to comment!</p>
