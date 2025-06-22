@@ -99,7 +99,7 @@ export default async function handler(req, res) {
       href="
       data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAAAoCAYAAABkfg1GAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAANuSURBVHgB7VmBldowDBW3QNmg3qB0gmYD2CB0gmODSyc4bgLSCbhOEG4C2CDXCWAD1yHKO6GTbYXk+uir/3t6DrEi2T+yLAeAhISEhISEhIQgLMDCydFJ7WQGCePAkVk6sSgNwTMUAwnXgxFLpYngKSQEcRfoO3juGycFjAD3gu6d5HDjwGCqYQw0UemJ2HNqgBGAKcbe8gpAHrpxGu1z3oidAJxcs/N0TyMDyZRk/cJ2CTcKxsMX7XN3kf4fkf6GyAeSex+hjebKyV7xhnfYZnDb+I3tVxgLjpxKSgfYF0oXjVQR22bM1CLY3oxRKjobSxznM4wFMnkq+0Aflyxi/0PyLKlq1jAQHxYAzuCKkZWTvjpC7DJie4960ciyityO1/SFG0G36S9sj81otADAgRrye4lpYYuyQZ1lhNhVxE+pfAEdWUXETkauNx7dqotALbl9AgACE+B5tTG6EEis2EAlmUf8rZUvIEO9rae/JGPtNlPj0aXjU6UKbQBoDIj1q3DvXFqRCXExEX8r7QTRzzRiJ7pS7GX6UuVNEgCFRl8qt0K1mjSpWVPrTdpShJdnB3f/FcI4YfsJdHhsVo9w/5X9LsGPF3I9tbp00J1EP8M1sBDd5bls2PMZiYhc4S+jaSWiO+uWu9BnQuPy+FRtsPjMAnWvK7muIPbZY0eV5ENkCbq0bp4K/TxVZQFbxz55loyzBgWkVHCCfhCX8MT/EcfnL1rGsOOl9OIOrN1Yv90ncu1NQxjdDfHBzTUK25ZSfSK2ggEgUTh4EyF9K5KOioDfY2gO1lNKggJSxL7AX8SkR8Qidth+E/q6SG024O94fS9tTuj3Z8R3ju0TXEZ4f9j4+T+4eV3pUx0JoQjnedC+lY4V08swummJNhPslWQFmD4ryzf4qgexBQyE7XlcJMt8xu5fbG5suedET0p3Nd/sCPENHw/SS+o7UWPlw4Akw5I6XBBllPqlzzcnHaPzfHJk86sJofRwkxO9qcDDAobAvj/J+CSDgSC25rbdMNY4WfFfYvu2qWwEWx3pc4XfBZJsMIrffTtgPBQwBmz7BShG7KCvPVb36XHOnumO0IXHXjF0XMxmNkYAcaMhcqNFvdLHFiOzsm3teW/1f+/8uwiQO/gj8n8PXGLl2Pk1AUFyWA4JCQkJCQkJCQkR/AGw5+WlQG58FQAAAABJRU5ErkJggg==
       "
-      x="${width - padding - 20}" y="${yOffset - 14}" width="86" height="40" clip-path="circle(20)"/>`);
+      x="${width - padding - 20}" y="${yOffset - 14}" width="20" height="20" clip-path="circle(20)"/>`);
     }
 
     // Linhas subsequentes
