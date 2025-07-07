@@ -64,7 +64,7 @@ export default function Home() {
 
   return (
     <div id="MainCore" style={{
-      backgroundImage: 'url(https://ella.janitorai.com/background-image/Z2X3TqVV3-lUNjwqlFGIx.webp)',
+      backgroundImage: 'url(https://ella.janitorai.com/background-image/5RbmfrAAc8b3C4jdaofWv.webp)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
