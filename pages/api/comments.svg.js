@@ -83,6 +83,24 @@ export default async function handler(req, res) {
 
     const wrapped = wrapTextPixels(message, width - 2 * padding, nameWidth);
 
+    // Y offset for background and label
+    const commentBlockHeight = lineHeight * wrapped.length + verticalSpacing;
+    let pinnedBgId = null;
+
+    if (comment.pinned) {
+      // Draw a blue gradient background for pinned comment
+      pinnedBgId = `pinned-bg-${yOffset}`;
+      renderedLines.push(`
+        <defs>
+          <linearGradient id="${pinnedBgId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <rect x="${padding - 6}" y="${yOffset - 6}" width="${width - 2 * (padding - 6)}" height="${commentBlockHeight + 18}" rx="8" fill="url(#${pinnedBgId})"/>
+      `);
+    }
+
     // Renderizar ícone de coração se o comentário tiver liked_by_owner = true
     // Renderizar comentário
     renderedLines.push(
@@ -112,6 +130,16 @@ export default async function handler(req, res) {
       );
     }
 
+    // If pinned, add a label below
+    if (comment.pinned) {
+      yOffset += lineHeight;
+      renderedLines.push(
+        `<text x="${padding}" y="${yOffset}" class="pinned-label">
+          <tspan>📌 pinned</tspan>
+        </text>`
+      );
+    }
+
     yOffset += verticalSpacing + lineHeight;
   });
 
@@ -126,6 +154,7 @@ export default async function handler(req, res) {
     .sep { fill: #e2e2e2; }
     .msg { fill: #cbd5e1; }
     .time { fill: #94a3b8; font-size: 12px; font-family: monospace; }
+    .pinned-label { font-family: 'Open Sans', sans-serif; font-size: 12px; fill: #3b82f6; font-style: italic; }
     ]]>
   </style>
   ${renderedLines.join('\n')}
