@@ -75,14 +75,14 @@ export default function Home() {
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background: #1b1118; }
+        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background:rgba(73, 73, 73, 0.36); }
         * { box-sizing:border-box; }
         a { color:#FFE033; text-decoration:none; }
-        nav.navbar { background:rgba(27, 17, 24, 0.9); padding:.8em 1em; border-bottom:1px solid #3a2a34; }
+        nav.navbar { background:rgba(129, 129, 129, 0.62); padding:.8em 1em; border-bottom:1px solid rgba(129, 129, 129, 0.62); }
         nav.navbar a { font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#FFE033; }
         nav.navbar a:hover { text-decoration:underline; }
         #PageTitle { font-family:'Press Start 2P',sans-serif; font-size:3em; margin:0; }
-        .comment-rules { background:rgba(27, 17, 24, 0.9); border:1px dashed #555; color:#ddd; padding:.8em; margin:1em; font-size:.9em; }
+        .comment-rules { background:rgba(129, 129, 129, 0.62); border:1px dashed #555; color:#ddd; padding:.8em; margin:1em; font-size:.9em; }
         .comment-rules ul { margin:0; padding-left:1.2em; }
         .comment-rules li { margin-bottom:.3em; }
         .PageModule { background:rgba(27, 17, 24, 0.8); border:1px solid rgba(255,255,255,0.05); margin:1em; padding:1em; border-radius:8px; }
@@ -91,7 +91,7 @@ export default function Home() {
         button { background:#FFE033; color:#1b1118; border:none; padding:.6em 1em; font-family:'Press Start 2P',sans-serif; cursor:pointer; }
         button:hover { background:#ffd700; }
         #comments-list { list-style:none; margin:0 1em 1em; padding:0; }
-        .comment { background:rgba(27, 17, 24, 0.9); border:1px solid #3a2a34; padding:.7em; margin-bottom:.8em; border-radius:4px; }
+        .comment { background:rgba(129, 129, 129, 0.62); border:1px solid rgba(129, 129, 129, 0.62); padding:.7em; margin-bottom:.8em; border-radius:4px; }
         .comment .author { display:block; font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#FFE033; margin-bottom:.4em; text-transform:uppercase; }
         .comment .text { margin:.4em 0; font-size:.95em; color:#e2e2e2; }
         .comment .time { font-size:.8em; color:#999; }
