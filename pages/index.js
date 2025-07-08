@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 
-// Helper for time ago
 const getTimeAgo = (timestamp) => {
   if (!timestamp) return '';
   const date = new Date(timestamp);
@@ -66,172 +65,67 @@ export default function Home() {
   return (
     <div id="MainCore" style={{
       minHeight: '100vh',
-      background: 'repeating-linear-gradient(135deg, #f7f4ef 0 40px, #ece7df 40px 80px)',
-      fontFamily: 'Georgia, Times New Roman, Times, serif',
-      color: '#2d2a26',
+      background: '#181c18',
+      fontFamily: 'Fira Mono, Consolas, monospace',
+      color: '#00ff66',
       paddingBottom: '4rem',
       letterSpacing: '0.01em',
       position: 'relative',
+      overflow: 'hidden',
     }}>
-      {/* Subtle paper texture overlay */}
+      {/* CRT scanlines and flicker */}
       <div style={{
         pointerEvents: 'none',
         position: 'fixed',
         inset: 0,
         zIndex: 0,
         opacity: 0.18,
-        background: 'url("https://www.transparenttextures.com/patterns/paper-fibers.png") repeat',
-        mixBlendMode: 'multiply',
+        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #0f1a0f 3px, transparent 4px)',
+        mixBlendMode: 'screen',
+        animation: 'crt-flicker 1.2s infinite',
       }} />
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;700&display=swap');
         body { margin:0; background:transparent; }
         * { box-sizing:border-box; }
-        a { color:#5a4e3c; text-decoration:underline; font-style:italic; }
-        a:hover { color:#b89c6b; }
+        a { color:#00ff66; text-decoration:underline; }
+        a:hover { color:#fff; }
         #MainCore {
-          background:repeating-linear-gradient(135deg, #f7f4ef 0 40px, #ece7df 40px 80px);
+          background:#181c18;
         }
         .terminal {
-          background:rgba(255,255,255,0.85);
-          border:2px solid #b89c6b;
-          border-radius:12px;
-          box-shadow:0 2px 16px #e6e0d6;
-          padding:2.2em 1.5em 1.5em 1.5em;
+          background:rgba(24,28,24,0.98);
+          border:2px solid #00ff66;
+          border-radius:0;
+          box-shadow:0 0 24px #00ff6640,0 0 0 4px #0f1a0f;
+          padding:2em 1.2em 1.2em 1.2em;
           margin:2em auto;
           max-width:700px;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+          font-family:'Fira Mono', Consolas, monospace;
           position:relative;
           overflow:hidden;
         }
-        .terminal:before {
-          content:'';
-          display:block;
-          position:absolute;
-          left:0; right:0; top:0; height:8px;
-          background:linear-gradient(90deg, #e6e0d6 0%, #b89c6b 50%, #e6e0d6 100%);
-          opacity:0.3;
-        }
         .terminal-title {
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
-          font-size:2.1em;
-          color:#5a4e3c;
-          font-style:italic;
+          font-family:'Fira Mono', Consolas, monospace;
+          font-size:1.5em;
+          color:#00ff66;
           margin-bottom:0.7em;
-          text-align:center;
+          text-align:left;
           letter-spacing:0.04em;
+          border-bottom:1px solid #00ff66;
+          padding-bottom:0.3em;
+          margin-left:0.1em;
         }
-        .comment-rules {
-          background:rgba(255,255,255,0.7);
-          border:1.5px dashed #b89c6b;
-          color:#5a4e3c;
-          padding:1em 1.5em;
-          margin:1.5em auto 2em;
-          font-size:1.1em;
-          border-radius:10px;
-          max-width:600px;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+        .terminal-title .prompt {
+          color:#fff;
+          font-weight:bold;
+          margin-right:0.3em;
         }
-        .comment-rules ul { margin:0; padding-left:1.2em; }
-        .comment-rules li { margin-bottom:.3em; }
-        label {
-          display:block;
-          margin-bottom:.5em;
-          font-weight:700;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
-          color:#b89c6b;
-          font-size:1.1em;
-        }
-        input,textarea {
-          width:100%;
-          padding:1em;
-          margin-bottom:1.1em;
-          background:rgba(255,255,255,0.7);
-          border:1.5px solid #b89c6b;
-          color:#2d2a26;
-          border-radius:6px;
-          font-family:'Georgia', Times New Roman, Times, serif;
-          font-size:1.1em;
-          outline:none;
-          box-shadow:0 1px 4px #e6e0d6 inset;
-          transition: border 0.2s;
-        }
-        input:focus,textarea:focus {
-          border:1.5px solid #5a4e3c;
-          background:rgba(255,255,255,0.95);
-        }
-        button {
-          background:linear-gradient(90deg,#e6e0d6,#b89c6b 80%);
-          color:#5a4e3c;
-          border:none;
-          padding:.8em 2em;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
-          font-size:1.1em;
-          border-radius:6px;
-          cursor:pointer;
-          box-shadow:0 1px 8px #e6e0d6;
-          font-weight:700;
-          letter-spacing:0.04em;
-          margin-top:0.5em;
-          transition: background 0.2s;
-        }
-        button:hover {
-          background:linear-gradient(90deg,#b89c6b,#e6e0d6 80%);
-          color:#2d2a26;
-        }
-        #comments-list {
-          list-style:none;
-          margin:0 0 1em 0;
-          padding:0;
-        }
-        .comment {
-          background:rgba(255,255,255,0.6);
-          border:1.5px solid #b89c6b;
-          padding:1em 1.1em;
-          margin-bottom:1.1em;
-          border-radius:6px;
-          box-shadow:0 1px 6px #e6e0d6;
-          position:relative;
-          font-family:'Georgia', Times New Roman, Times, serif;
-        }
-        .comment .author {
-          display:block;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
-          font-size:1.05em;
-          color:#b89c6b;
-          margin-bottom:.3em;
-          font-style:italic;
-        }
-        .comment .text {
-          margin:.3em 0;
-          font-size:1.08em;
-          color:#2d2a26;
-          font-family:'Georgia', Times New Roman, Times, serif;
-        }
-        .comment .time {
-          font-size:.92em;
-          color:#b89c6b;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
-          font-style:italic;
-        }
-        .char-count {
-          text-align:right;
-          color:#b89c6b;
-          font-size:0.95em;
-          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
-        }
-        /* 8-bit pixel border for terminal */
-        .pixel-border {
-          border: 4px solid #b89c6b;
-          border-radius: 0;
-          box-shadow: 0 0 0 2px #ece7df, 0 0 0 6px #b89c6b;
-        }
-        /* Terminal blinking cursor animation */
         .blinking-cursor {
           display:inline-block;
           width:0.7em;
           height:1.1em;
-          background:#b89c6b;
+          background:#00ff66;
           margin-left:0.2em;
           vertical-align:middle;
           animation: blink 1s steps(1) infinite;
@@ -240,23 +134,131 @@ export default function Home() {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
         }
+        @keyframes crt-flicker {
+          0%, 100% { opacity: 0.18; }
+          10% { opacity: 0.22; }
+          20% { opacity: 0.15; }
+          30% { opacity: 0.20; }
+          40% { opacity: 0.16; }
+          50% { opacity: 0.19; }
+          60% { opacity: 0.17; }
+          70% { opacity: 0.21; }
+          80% { opacity: 0.16; }
+          90% { opacity: 0.20; }
+        }
+        .comment-rules {
+          background:rgba(24,28,24,0.7);
+          border:1.5px dashed #00ff66;
+          color:#00ff66;
+          padding:1em 1.5em;
+          margin:1.5em auto 2em;
+          font-size:1.1em;
+          border-radius:0;
+          max-width:600px;
+          font-family:'Fira Mono', Consolas, monospace;
+        }
+        .comment-rules ul { margin:0; padding-left:1.2em; }
+        .comment-rules li { margin-bottom:.3em; }
+        label {
+          display:block;
+          margin-bottom:.5em;
+          font-weight:700;
+          font-family:'Fira Mono', Consolas, monospace;
+          color:#00ff66;
+          font-size:1.1em;
+        }
+        input,textarea {
+          width:100%;
+          padding:1em;
+          margin-bottom:1.1em;
+          background:rgba(24,28,24,0.9);
+          border:1.5px solid #00ff66;
+          color:#00ff66;
+          border-radius:0;
+          font-family:'Fira Mono', Consolas, monospace;
+          font-size:1.1em;
+          outline:none;
+          box-shadow:0 1px 4px #00ff6620 inset;
+          transition: border 0.2s;
+        }
+        input:focus,textarea:focus {
+          border:1.5px solid #fff;
+          background:rgba(24,28,24,1);
+        }
+        button {
+          background:linear-gradient(90deg,#00ff66 60%,#0f1a0f 100%);
+          color:#181c18;
+          border:none;
+          padding:.8em 2em;
+          font-family:'Fira Mono', Consolas, monospace;
+          font-size:1.1em;
+          border-radius:0;
+          cursor:pointer;
+          box-shadow:0 1px 8px #00ff6620;
+          font-weight:700;
+          letter-spacing:0.04em;
+          margin-top:0.5em;
+          transition: background 0.2s;
+        }
+        button:hover {
+          background:linear-gradient(90deg,#0f1a0f 60%,#00ff66 100%);
+          color:#00ff66;
+        }
+        #comments-list {
+          list-style:none;
+          margin:0 0 1em 0;
+          padding:0;
+        }
+        .comment {
+          background:rgba(24,28,24,0.8);
+          border:1.5px solid #00ff66;
+          padding:1em 1.1em;
+          margin-bottom:1.1em;
+          border-radius:0;
+          box-shadow:0 1px 6px #00ff6620;
+          position:relative;
+          font-family:'Fira Mono', Consolas, monospace;
+        }
+        .comment .author {
+          display:block;
+          font-family:'Fira Mono', Consolas, monospace;
+          font-size:1.05em;
+          color:#fff;
+          margin-bottom:.3em;
+        }
+        .comment .text {
+          margin:.3em 0;
+          font-size:1.08em;
+          color:#00ff66;
+          font-family:'Fira Mono', Consolas, monospace;
+        }
+        .comment .time {
+          font-size:.92em;
+          color:#00ff66;
+          font-family:'Fira Mono', Consolas, monospace;
+        }
+        .char-count {
+          text-align:right;
+          color:#00ff66;
+          font-size:0.95em;
+          font-family:'Fira Mono', Consolas, monospace;
+        }
         @media (max-width: 600px) {
           .terminal { padding:1.1em 0.3em 1.2em 0.3em; }
-          .terminal-title { font-size:1.2em; }
+          .terminal-title { font-size:1.1em; }
         }
       `}</style>
       <nav style={{
         width: '100%',
-        background: 'rgba(255,255,255,0.7)',
-        borderBottom: '2px solid #b89c6b',
-        boxShadow: '0 1px 8px #e6e0d6',
+        background: 'rgba(24,28,24,0.9)',
+        borderBottom: '2px solid #00ff66',
+        boxShadow: '0 1px 8px #00ff6620',
         padding: '1.1em 0',
         marginBottom: '2em',
         textAlign: 'center',
         position: 'relative',
         zIndex: 2,
-        fontFamily: 'Playfair Display, Georgia, Times New Roman, Times, serif',
-        fontStyle: 'italic',
+        fontFamily: 'Fira Mono, Consolas, monospace',
         fontSize: '1.1em',
       }}>
         <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">
@@ -269,8 +271,8 @@ export default function Home() {
             <li>Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
           </ul>
         </div>
-        <section className="terminal pixel-border">
-          <div className="terminal-title">Add a Comment <span className="blinking-cursor" /></div>
+        <section className="terminal">
+          <div className="terminal-title"><span className="prompt">$</span> Add a Comment <span className="blinking-cursor" /></div>
           <form onSubmit={handleSubmit} autoComplete="off">
             <label>Your Name</label>
             <input
@@ -289,11 +291,11 @@ export default function Home() {
             <button type="submit">Post Comment</button>
           </form>
         </section>
-        <section className="terminal pixel-border">
-          <div className="terminal-title">Comments <span className="blinking-cursor" /></div>
+        <section className="terminal">
+          <div className="terminal-title"><span className="prompt">$</span> Comments <span className="blinking-cursor" /></div>
           <ul id="comments-list">
             {comments.length === 0
-              ? <p style={{ color: '#b89c6b', textAlign: 'center', fontFamily: 'Playfair Display, Georgia, Times New Roman, Times, serif', fontStyle: 'italic' }}>Be the first to comment!</p>
+              ? <p style={{ color: '#00ff66', textAlign: 'center', fontFamily: 'Fira Mono, Consolas, monospace' }}>Be the first to comment!</p>
               : comments.map(c => (
                 <li key={c.id || c.created_at} className="comment">
                   <span className="author">{c.name}</span>
