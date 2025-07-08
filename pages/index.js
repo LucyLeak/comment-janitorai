@@ -64,55 +64,54 @@ export default function Home() {
 
   return (
     <div id="MainCore" style={{
-      backgroundImage: 'url(https://ella.janitorai.com/background-image/5RbmfrAAc8b3C4jdaofWv.webp)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
+      background: 'linear-gradient(135deg, #e9dac1 0%, #b08968 100%)',
       minHeight: '100vh',
       paddingBottom: '4rem',
-      backgroundColor: '#1b1118'
+      fontFamily: 'Georgia, Times New Roman, Garamond, serif',
+      color: '#4e342e'
     }}>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        body { margin:0; font-family:'Open Sans',sans-serif; color:#e2e2e2; background:rgba(73, 73, 73, 0.36); }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+        body { margin:0; font-family:'Georgia', 'Times New Roman', Garamond, serif; color:#4e342e; background:#e9dac1; }
         * { box-sizing:border-box; }
-        a { color:#FFE033; text-decoration:none; }
-        nav.navbar { background:rgba(129, 129, 129, 0.09); padding:.8em 1em; border-bottom:1px solid rgba(129, 129, 129, 0.09); }
-        nav.navbar a { font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#FFE033; }
+        a { color:#7c4f29; text-decoration:none; font-style:italic; }
+        nav.navbar { background:rgba(176,137,104,0.12); padding:.8em 1em; border-bottom:1px solid #b08968; }
+        nav.navbar a { font-family:'Playfair Display', serif; font-size:1.1em; color:#7c4f29; font-style:italic; }
         nav.navbar a:hover { text-decoration:underline; }
-        #PageTitle { font-family:'Press Start 2P',sans-serif; font-size:3em; margin:0; }
-        .comment-rules { background:rgba(129, 129, 129, 0.09); border:1px dashed #555; color:#ddd; padding:.8em; margin:1em; font-size:.9em; }
+        #PageTitle { font-family:'Playfair Display', serif; font-size:2.5em; margin:0; color:#7c4f29; font-style:italic; }
+        .comment-rules { background:rgba(233,218,193,0.7); border:1px dashed #b08968; color:#6d4c41; padding:.8em; margin:1em; font-size:1em; border-radius:8px; font-family:'Georgia', serif; }
         .comment-rules ul { margin:0; padding-left:1.2em; }
         .comment-rules li { margin-bottom:.3em; }
-        .PageModule { background:rgba(138, 138, 138, 0.1); border:1px solid rgba(255,255,255,0.05); margin:1em; padding:1em; border-radius:8px; }
-        label { display:block; margin-bottom:.5em; font-weight:500; }
-        input,textarea { width:100%; padding:.75rem; margin-bottom:1em; background:rgba(34,34,34,0.8); border:1px solid #444; color:#ccc; border-radius:4px; }
-        button { background:#FFE033; color:#1b1118; border:none; padding:.6em 1em; font-family:'Press Start 2P',sans-serif; cursor:pointer; }
-        button:hover { background:#ffd700; }
+        .PageModule { background:rgba(255,255,255,0.7); border:1px solid #b08968; margin:1em; padding:1.5em; border-radius:12px; box-shadow:0 2px 8px rgba(176,137,104,0.08); font-family:'Georgia', serif; }
+        label { display:block; margin-bottom:.5em; font-weight:700; font-family:'Playfair Display', serif; color:#7c4f29; font-style:italic; }
+        input,textarea { width:100%; padding:.75rem; margin-bottom:1em; background:rgba(233,218,193,0.7); border:1px solid #b08968; color:#4e342e; border-radius:6px; font-family:'Georgia', serif; font-size:1em; }
+        button { background:#7c4f29; color:#fffbe7; border:none; padding:.7em 1.3em; font-family:'Playfair Display', serif; font-size:1em; border-radius:6px; cursor:pointer; font-style:italic; box-shadow:0 2px 6px rgba(176,137,104,0.08); transition:background 0.2s; }
+        button:hover { background:#a47149; }
         #comments-list { list-style:none; margin:0 1em 1em; padding:0; }
-        .comment { background:rgba(129, 129, 129, 0.09); border:1px solid rgba(129, 129, 129, 0.09); padding:.7em; margin-bottom:.8em; border-radius:4px; }
-        .comment .author { display:block; font-family:'Press Start 2P',sans-serif; font-size:.9em; color:#FFE033; margin-bottom:.4em; text-transform:uppercase; }
-        .comment .text { margin:.4em 0; font-size:.95em; color:#e2e2e2; }
-        .comment .time { font-size:.8em; color:#999; }
+        .comment { background:rgba(233,218,193,0.7); border:1px solid #b08968; padding:1em; margin-bottom:1.2em; border-radius:8px; box-shadow:0 1px 4px rgba(176,137,104,0.06); }
+        .comment .author { display:flex; align-items:center; font-family:'Playfair Display', serif; font-size:1.1em; color:#7c4f29; margin-bottom:.3em; font-style:italic; }
+        .comment .author .icon { margin-right:.5em; font-size:1.2em; }
+        .comment .text { margin:.4em 0; font-size:1.05em; color:#4e342e; font-family:'Georgia', serif; }
+        .comment .time { font-size:.9em; color:#a47149; font-style:italic; }
       `}</style>
 
       <nav className="navbar">
         <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">
-          ⬅ Back to my profile
+          <span role="img" aria-label="coffee">☕</span> Back to my profile
         </a>
       </nav>
 
-      <main id="MainContentWrapper" style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 1.5rem' }}>
+      <main id="MainContentWrapper" style={{ maxWidth: '700px', margin: '2rem auto', padding: '0 1.5rem' }}>
+        <h1 id="PageTitle"><span role="img" aria-label="coffee">☕</span> Cozy Comments</h1>
 
         <div className="comment-rules">
           <ul>
-            <li>Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
+            <li><span role="img" aria-label="rules">📜</span> Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
           </ul>
         </div>
 
         <section className="PageModule">
-          <h2 style={{ fontFamily: 'Press Start 2P', color: '#FFE033' }}>Add a Comment</h2>
+          <h2 style={{ fontFamily: 'Playfair Display', fontStyle: 'italic', color: '#7c4f29' }}><span role="img" aria-label="add">✍️</span> Add a Comment</h2>
           <form onSubmit={handleSubmit}>
             <label>Your Name</label>
             <input
@@ -128,20 +127,20 @@ export default function Home() {
               maxLength={MAX_CHARS}
               rows={3}
               required />
-            <div style={{ textAlign: 'right', color: '#94A3B8' }}>{charCount}/{MAX_CHARS}</div>
+            <div style={{ textAlign: 'right', color: '#a47149', fontStyle: 'italic' }}>{charCount}/{MAX_CHARS}</div>
 
-            <button type="submit">Post Comment</button>
+            <button type="submit"><span role="img" aria-label="coffee">☕</span> Post Comment</button>
           </form>
         </section>
 
         <section className="PageModule">
-          <h2 style={{ fontFamily: 'Press Start 2P', color: '#FFE033' }}>Comments</h2>
+          <h2 style={{ fontFamily: 'Playfair Display', fontStyle: 'italic', color: '#7c4f29' }}><span role="img" aria-label="comments">💬</span> Comments</h2>
           <ul id="comments-list">
             {comments.length === 0
-              ? <p>Be the first to comment!</p>
+              ? <p style={{fontStyle:'italic',color:'#a47149'}}>Be the first to comment!</p>
               : comments.map(c => (
                 <li key={c.id || c.created_at} className="comment">
-                  <span className="author">{c.name}</span>
+                  <span className="author"><span className="icon" role="img" aria-label="user">👤</span>{c.name}</span>
                   <p className="text">{c.message}</p>
                   <span className="time">{getTimeAgo(c.created_at)}</span>
                 </li>
