@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-// Y2K/2000s fonts: Orbitron, Press Start 2P, Audiowide, etc.
-// Static effect: animated SVG overlay
-
+// Helper for time ago
 const getTimeAgo = (timestamp) => {
   if (!timestamp) return '';
   const date = new Date(timestamp);
@@ -68,131 +66,118 @@ export default function Home() {
   return (
     <div id="MainCore" style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0ff 0%, #f0f 100%)',
+      background: 'repeating-linear-gradient(135deg, #f7f4ef 0 40px, #ece7df 40px 80px)',
+      fontFamily: 'Georgia, Times New Roman, Times, serif',
+      color: '#2d2a26',
+      paddingBottom: '4rem',
+      letterSpacing: '0.01em',
       position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'Orbitron, Press Start 2P, Audiowide, monospace',
-      color: '#fff',
-      letterSpacing: '0.03em',
     }}>
-      {/* Y2K/CRT static overlay */}
+      {/* Subtle paper texture overlay */}
       <div style={{
         pointerEvents: 'none',
         position: 'fixed',
-        zIndex: 9999,
         inset: 0,
+        zIndex: 0,
         opacity: 0.18,
-        mixBlendMode: 'screen',
-      }}>
-        <svg width="100%" height="100%" style={{ display: 'block' }}>
-          <filter id="static">
-            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="2" result="turb"/>
-            <feDisplacementMap in2="turb" in="SourceGraphic" scale="8" xChannelSelector="R" yChannelSelector="G"/>
-          </filter>
-          <rect width="100%" height="100%" filter="url(#static)" fill="#fff" />
-        </svg>
-      </div>
+        background: 'url("https://www.transparenttextures.com/patterns/paper-fibers.png") repeat',
+        mixBlendMode: 'multiply',
+      }} />
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Press+Start+2P&family=Audiowide&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
         body { margin:0; background:transparent; }
         * { box-sizing:border-box; }
-        a { color:#0ff; text-shadow:0 0 6px #fff,0 0 12px #0ff; text-decoration:none; }
-        a:hover { color:#f0f; text-shadow:0 0 8px #f0f,0 0 16px #fff; }
+        a { color:#5a4e3c; text-decoration:underline; font-style:italic; }
+        a:hover { color:#b89c6b; }
         #MainCore {
-          box-shadow: 0 0 80px #0ff8, 0 0 120px #f0f8;
+          background:repeating-linear-gradient(135deg, #f7f4ef 0 40px, #ece7df 40px 80px);
         }
-        .y2k-glow {
-          text-shadow: 0 0 8px #fff, 0 0 24px #0ff, 0 0 32px #f0f;
-        }
-        .crt {
-          position:relative;
-          background:rgba(0,0,0,0.7);
-          border:2px solid #0ff;
-          border-radius:18px;
-          box-shadow:0 0 32px #0ff8,0 0 64px #f0f8;
-          padding:2.5em 2em 2em 2em;
+        .terminal {
+          background:rgba(255,255,255,0.85);
+          border:2px solid #b89c6b;
+          border-radius:12px;
+          box-shadow:0 2px 16px #e6e0d6;
+          padding:2.2em 1.5em 1.5em 1.5em;
           margin:2em auto;
           max-width:700px;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+          position:relative;
           overflow:hidden;
         }
-        .crt:before {
+        .terminal:before {
           content:'';
           display:block;
           position:absolute;
           left:0; right:0; top:0; height:8px;
-          background:linear-gradient(90deg, #fff2 0%, #0ff8 50%, #fff2 100%);
-          opacity:0.7;
-          filter: blur(2px);
+          background:linear-gradient(90deg, #e6e0d6 0%, #b89c6b 50%, #e6e0d6 100%);
+          opacity:0.3;
         }
-        .crt:after {
-          content:'';
-          display:block;
-          position:absolute;
-          left:0; right:0; bottom:0; height:8px;
-          background:linear-gradient(90deg, #fff2 0%, #f0f8 50%, #fff2 100%);
-          opacity:0.5;
-          filter: blur(2px);
-        }
-        .crt-title {
-          font-family:'Orbitron', 'Audiowide', 'Press Start 2P', monospace;
-          font-size:2.2em;
-          color:#fff;
-          letter-spacing:0.08em;
-          margin-bottom:0.5em;
+        .terminal-title {
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+          font-size:2.1em;
+          color:#5a4e3c;
+          font-style:italic;
+          margin-bottom:0.7em;
           text-align:center;
-          text-shadow:0 0 12px #0ff,0 0 24px #f0f;
+          letter-spacing:0.04em;
         }
         .comment-rules {
-          background:rgba(0,0,0,0.5);
-          border:2px dashed #f0f;
-          color:#fff;
+          background:rgba(255,255,255,0.7);
+          border:1.5px dashed #b89c6b;
+          color:#5a4e3c;
           padding:1em 1.5em;
           margin:1.5em auto 2em;
           font-size:1.1em;
-          border-radius:12px;
+          border-radius:10px;
           max-width:600px;
-          box-shadow:0 0 16px #f0f8;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
         }
         .comment-rules ul { margin:0; padding-left:1.2em; }
         .comment-rules li { margin-bottom:.3em; }
-        label { display:block; margin-bottom:.5em; font-weight:700; letter-spacing:0.04em; color:#0ff; text-shadow:0 0 8px #0ff,0 0 16px #fff; }
+        label {
+          display:block;
+          margin-bottom:.5em;
+          font-weight:700;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+          color:#b89c6b;
+          font-size:1.1em;
+        }
         input,textarea {
           width:100%;
-          padding:1.1em;
-          margin-bottom:1.2em;
-          background:rgba(0,0,0,0.7);
-          border:2px solid #f0f;
-          color:#fff;
-          border-radius:8px;
-          font-family:'Audiowide','Orbitron',monospace;
+          padding:1em;
+          margin-bottom:1.1em;
+          background:rgba(255,255,255,0.7);
+          border:1.5px solid #b89c6b;
+          color:#2d2a26;
+          border-radius:6px;
+          font-family:'Georgia', Times New Roman, Times, serif;
           font-size:1.1em;
           outline:none;
-          box-shadow:0 0 8px #f0f8 inset;
+          box-shadow:0 1px 4px #e6e0d6 inset;
           transition: border 0.2s;
         }
         input:focus,textarea:focus {
-          border:2px solid #0ff;
-          box-shadow:0 0 16px #0ff8;
+          border:1.5px solid #5a4e3c;
+          background:rgba(255,255,255,0.95);
         }
         button {
-          background:linear-gradient(90deg,#0ff,#f0f 80%);
-          color:#222;
+          background:linear-gradient(90deg,#e6e0d6,#b89c6b 80%);
+          color:#5a4e3c;
           border:none;
-          padding:.9em 2.2em;
-          font-family:'Orbitron','Audiowide',monospace;
+          padding:.8em 2em;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
           font-size:1.1em;
-          border-radius:8px;
+          border-radius:6px;
           cursor:pointer;
-          box-shadow:0 0 12px #0ff8,0 0 24px #f0f8;
-          text-shadow:0 0 8px #fff;
+          box-shadow:0 1px 8px #e6e0d6;
           font-weight:700;
-          letter-spacing:0.06em;
+          letter-spacing:0.04em;
           margin-top:0.5em;
+          transition: background 0.2s;
         }
         button:hover {
-          background:linear-gradient(90deg,#f0f,#0ff 80%);
-          color:#fff;
-          box-shadow:0 0 24px #f0f8,0 0 32px #0ff8;
+          background:linear-gradient(90deg,#b89c6b,#e6e0d6 80%);
+          color:#2d2a26;
         }
         #comments-list {
           list-style:none;
@@ -200,57 +185,81 @@ export default function Home() {
           padding:0;
         }
         .comment {
-          background:rgba(0,0,0,0.6);
-          border:2px solid #0ff8;
-          padding:1.1em 1.2em;
-          margin-bottom:1.2em;
-          border-radius:8px;
-          box-shadow:0 0 12px #0ff8,0 0 24px #f0f8;
+          background:rgba(255,255,255,0.6);
+          border:1.5px solid #b89c6b;
+          padding:1em 1.1em;
+          margin-bottom:1.1em;
+          border-radius:6px;
+          box-shadow:0 1px 6px #e6e0d6;
           position:relative;
+          font-family:'Georgia', Times New Roman, Times, serif;
         }
         .comment .author {
           display:block;
-          font-family:'Press Start 2P','Orbitron',monospace;
-          font-size:1em;
-          color:#f0f;
-          margin-bottom:.4em;
-          text-transform:uppercase;
-          text-shadow:0 0 8px #f0f,0 0 16px #fff;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+          font-size:1.05em;
+          color:#b89c6b;
+          margin-bottom:.3em;
+          font-style:italic;
         }
         .comment .text {
-          margin:.4em 0;
-          font-size:1.1em;
-          color:#fff;
-          text-shadow:0 0 4px #0ff8;
+          margin:.3em 0;
+          font-size:1.08em;
+          color:#2d2a26;
+          font-family:'Georgia', Times New Roman, Times, serif;
         }
         .comment .time {
-          font-size:.9em;
-          color:#0ff;
-          text-shadow:0 0 6px #0ff8;
+          font-size:.92em;
+          color:#b89c6b;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+          font-style:italic;
         }
         .char-count {
           text-align:right;
-          color:#f0f;
+          color:#b89c6b;
           font-size:0.95em;
-          text-shadow:0 0 6px #fff,0 0 12px #f0f;
+          font-family:'Playfair Display', Georgia, Times New Roman, Times, serif;
+        }
+        /* 8-bit pixel border for terminal */
+        .pixel-border {
+          border: 4px solid #b89c6b;
+          border-radius: 0;
+          box-shadow: 0 0 0 2px #ece7df, 0 0 0 6px #b89c6b;
+        }
+        /* Terminal blinking cursor animation */
+        .blinking-cursor {
+          display:inline-block;
+          width:0.7em;
+          height:1.1em;
+          background:#b89c6b;
+          margin-left:0.2em;
+          vertical-align:middle;
+          animation: blink 1s steps(1) infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
         }
         @media (max-width: 600px) {
-          .crt { padding:1.2em 0.5em 1.5em 0.5em; }
-          .crt-title { font-size:1.2em; }
+          .terminal { padding:1.1em 0.3em 1.2em 0.3em; }
+          .terminal-title { font-size:1.2em; }
         }
       `}</style>
       <nav style={{
         width: '100%',
-        background: 'rgba(0,0,0,0.7)',
-        borderBottom: '2px solid #0ff',
-        boxShadow: '0 0 16px #0ff8',
-        padding: '1.2em 0',
+        background: 'rgba(255,255,255,0.7)',
+        borderBottom: '2px solid #b89c6b',
+        boxShadow: '0 1px 8px #e6e0d6',
+        padding: '1.1em 0',
         marginBottom: '2em',
         textAlign: 'center',
         position: 'relative',
         zIndex: 2,
+        fontFamily: 'Playfair Display, Georgia, Times New Roman, Times, serif',
+        fontStyle: 'italic',
+        fontSize: '1.1em',
       }}>
-        <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank" className="y2k-glow">
+        <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">
           ⬅ Back to my profile
         </a>
       </nav>
@@ -260,8 +269,8 @@ export default function Home() {
             <li>Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
           </ul>
         </div>
-        <section className="crt">
-          <div className="crt-title">Add a Comment</div>
+        <section className="terminal pixel-border">
+          <div className="terminal-title">Add a Comment <span className="blinking-cursor" /></div>
           <form onSubmit={handleSubmit} autoComplete="off">
             <label>Your Name</label>
             <input
@@ -280,11 +289,11 @@ export default function Home() {
             <button type="submit">Post Comment</button>
           </form>
         </section>
-        <section className="crt">
-          <div className="crt-title">Comments</div>
+        <section className="terminal pixel-border">
+          <div className="terminal-title">Comments <span className="blinking-cursor" /></div>
           <ul id="comments-list">
             {comments.length === 0
-              ? <p style={{ color: '#0ff', textAlign: 'center', fontFamily: 'Orbitron, monospace', textShadow: '0 0 8px #0ff,0 0 16px #fff' }}>Be the first to comment!</p>
+              ? <p style={{ color: '#b89c6b', textAlign: 'center', fontFamily: 'Playfair Display, Georgia, Times New Roman, Times, serif', fontStyle: 'italic' }}>Be the first to comment!</p>
               : comments.map(c => (
                 <li key={c.id || c.created_at} className="comment">
                   <span className="author">{c.name}</span>
