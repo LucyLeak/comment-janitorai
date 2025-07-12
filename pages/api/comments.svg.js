@@ -78,7 +78,7 @@ export default async function handler(req, res) {
   }
 
   // Limit to 20 comments, newest first
-  const maxComments = 20;
+  const maxComments = 14;
   const totalComments = comments.length;
   const limitedComments = comments.slice(0, maxComments);
 
