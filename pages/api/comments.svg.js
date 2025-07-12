@@ -65,6 +65,11 @@ export default async function handler(req, res) {
     console.error('ERROR in comments.svg:', err);
   }
 
+  // Limit to 20 comments, newest first
+  const maxComments = 20;
+  const totalComments = comments.length;
+  const limitedComments = comments.slice(0, maxComments);
+
   const padding = 16;
   const width = 330;
   const lineHeight = 20;
@@ -73,7 +78,7 @@ export default async function handler(req, res) {
   let yOffset = padding;
   const renderedLines = [];
 
-  comments.forEach((comment, idx) => {
+  limitedComments.forEach((comment, idx) => {
     const timeAgo = formatTimeAgo(comment.created_at);
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
@@ -153,6 +158,15 @@ export default async function handler(req, res) {
   });
 
   const height = yOffset;
+
+  // Add 'and more' text if there are more comments
+  if (totalComments > maxComments) {
+    renderedLines.push(`
+      <text x="${padding}" y="${height - 8}" class="more-comments" style="font-size:12px;fill:#94a3b8;font-family:monospace;">
+        and more ${totalComments - maxComments} comments
+      </text>
+    `);
+  }
 
   const svg = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background: transparent">
