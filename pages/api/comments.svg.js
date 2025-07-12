@@ -97,8 +97,6 @@ export default async function handler(req, res) {
     const timeAgo = formatTimeAgo(comment.created_at);
     const name = escapeXML(comment.name);
     const message = escapeXML(comment.message);
-
-    // Estimar largura do nome
     const nameWidth = approximateTextWidth(name, 14);
     const dateWidth = approximateTextWidth(timeAgo, 12);
     const iconSpacing = 24; // space for icons
@@ -131,31 +129,22 @@ export default async function handler(req, res) {
     // Start comment block group
     renderedLines.push(`<g id="${blockId}" class="comment-block">`);
 
-    // Name row (name, date, liked, pinned)
-    let nameRow = `<text x="${padding}" y="${yOffset + rowHeight - 6}" class="comment-name-row">
+    // Name row (name, date)
+    renderedLines.push(`<text x="${padding}" y="${yOffset + rowHeight - 6}" class="comment-name-row">
       <tspan class="name">${name}</tspan>
-      <tspan class="date" dx="8">${timeAgo}</tspan>`;
+      <tspan class="date" dx="8">${timeAgo}</tspan>
+    </text>`);
 
-    // Liked icon
+    // Icons (liked, pinned) as separate <image> elements
+    let iconX = padding + nameWidth + dateWidth + 32;
     if (comment.liked_by_owner && likedIcon) {
-      nameRow += `<tspan dx="8" class="liked-icon">
-        <image 
-          href="${likedIcon}"
-          x="${width - padding - 40}" y="${yOffset + rowHeight - 22}" width="16" height="16"/>
-      </tspan>`;
+      renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${yOffset + rowHeight - 22}" width="16" height="16" class="liked-icon"/>`);
+      iconX += 20;
     }
-
-    // Pinned icon
     if (comment.pinned && pinnedIcon) {
-      nameRow += `<tspan dx="8" class="pinned-icon">
-        <image 
-          href="${pinnedIcon}"
-          x="${width - padding - 20}" y="${yOffset + rowHeight - 22}" width="16" height="16"/>
-      </tspan>`;
+      renderedLines.push(`<image href="${pinnedIcon}" x="${iconX}" y="${yOffset + rowHeight - 22}" width="16" height="16" class="pinned-icon"/>`);
+      iconX += 20;
     }
-
-    nameRow += `</text>`;
-    renderedLines.push(nameRow);
 
     // Message block
     for (let i = 0; i < wrapped.length; i++) {
