@@ -1,4 +1,6 @@
 import { getComments } from '../../lib/db';
+import fs from 'fs';
+import path from 'path';
 
 function escapeXML(str = '') {
   return String(str)
@@ -57,6 +59,16 @@ function wrapTextPixels(text, maxWidth, prefixWidth = 0, fontSize = 14) {
   return lines;
 }
 
+function getBase64Image(fileName) {
+  try {
+    const filePath = path.join(process.cwd(), 'public', fileName);
+    const data = fs.readFileSync(filePath);
+    return `data:image/png;base64,${data.toString('base64')}`;
+  } catch (err) {
+    return '';
+  }
+}
+
 export default async function handler(req, res) {
   let comments = [];
   try {
@@ -77,6 +89,9 @@ export default async function handler(req, res) {
 
   let yOffset = padding;
   const renderedLines = [];
+
+  const likedIcon = getBase64Image('likedC.png');
+  const pinnedIcon = getBase64Image('pinned.png');
 
   limitedComments.forEach((comment, idx) => {
     const timeAgo = formatTimeAgo(comment.created_at);
@@ -122,19 +137,19 @@ export default async function handler(req, res) {
       <tspan class="date" dx="8">${timeAgo}</tspan>`;
 
     // Liked icon
-    if (comment.liked_by_owner) {
+    if (comment.liked_by_owner && likedIcon) {
       nameRow += `<tspan dx="8" class="liked-icon">
         <image 
-          href="/likedC.png"
+          href="${likedIcon}"
           x="${width - padding - 40}" y="${yOffset + rowHeight - 22}" width="16" height="16"/>
       </tspan>`;
     }
 
-    // Pinned icon placeholder (always visible if pinned)
-    if (comment.pinned) {
+    // Pinned icon
+    if (comment.pinned && pinnedIcon) {
       nameRow += `<tspan dx="8" class="pinned-icon">
         <image 
-          href="/pinned.png"
+          href="${pinnedIcon}"
           x="${width - padding - 20}" y="${yOffset + rowHeight - 22}" width="16" height="16"/>
       </tspan>`;
     }
