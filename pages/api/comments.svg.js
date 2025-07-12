@@ -84,8 +84,9 @@ export default async function handler(req, res) {
 
   const padding = 16;
   const width = 330;
-  const lineHeight = 20;
+  const lineHeight = 26; // Slightly larger comments
   const verticalSpacing = 10;
+  const blockPadding = 12; // More space between name and comment
 
   let yOffset = padding;
   const renderedLines = [];
@@ -130,9 +131,9 @@ export default async function handler(req, res) {
     renderedLines.push(`<g id="${blockId}" class="comment-block">`);
 
     // Name row (name, date)
-    renderedLines.push(`<text x="${padding}" y="${yOffset + rowHeight - 6}" class="comment-name-row">
-      <tspan class="name">${name}</tspan>
-      <tspan class="date" dx="8">${timeAgo}</tspan>
+    renderedLines.push(`<text x="${padding}" y="${yOffset + lineHeight - 8}" class="comment-name-row" style="font-size:16px;">
+      <tspan class="name" style="font-size:18px;">${name}</tspan>
+      <tspan class="date" dx="8" style="font-size:15px;">${timeAgo}</tspan>
     </text>`);
 
     // Icons (liked, pinned) as separate <image> elements
@@ -141,16 +142,18 @@ export default async function handler(req, res) {
       renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${yOffset + rowHeight - 22}" width="16" height="16" class="liked-icon"/>`);
       iconX += 20;
     }
+    // Pinned icon: always in the top-right corner of the comment block
     if (comment.pinned && pinnedIcon) {
-      renderedLines.push(`<image href="${pinnedIcon}" x="${iconX}" y="${yOffset + rowHeight - 22}" width="16" height="16" class="pinned-icon"/>`);
-      iconX += 20;
+      const pinnedX = width - padding - 16; // 16px from right edge
+      const pinnedY = yOffset + 4; // 4px from top edge
+      renderedLines.push(`<image href="${pinnedIcon}" x="${pinnedX}" y="${pinnedY}" width="16" height="16" class="pinned-icon"/>`);
     }
 
     // Message block
     for (let i = 0; i < wrapped.length; i++) {
       renderedLines.push(
-        `<text x="${padding}" y="${yOffset + rowHeight + blockPadding + i * lineHeight}" class="comment-message">
-          <tspan class="msg">${wrapped[i]}</tspan>
+        `<text x="${padding}" y="${yOffset + lineHeight + blockPadding + i * lineHeight}" class="comment-message" style="font-size:16px;">
+          <tspan class="msg" style="font-size:16px;">${wrapped[i]}</tspan>
         </text>`
       );
     }
@@ -177,14 +180,14 @@ export default async function handler(req, res) {
   <style>
     <![CDATA[
     .comment-block { }
-    .comment-name-row { font-family: 'Open Sans', sans-serif; font-size: 14px; fill: #e2e2e2; }
-    .name { font-family: monospace; fill: #ffe033; font-weight: bold; }
-    .date { fill: #94a3b8; font-size: 12px; font-family: monospace; }
-    .msg { fill: #cbd5e1; }
+    .comment-name-row { font-family: 'Open Sans', sans-serif; font-size: 16px; fill: #e2e2e2; }
+    .name { font-family: monospace; fill: #ffe033; font-weight: bold; font-size: 18px; }
+    .date { fill: #94a3b8; font-size: 15px; font-family: monospace; }
+    .msg { fill: #cbd5e1; font-size: 16px; }
     .liked-icon { }
     .pinned-icon { }
     .custom-pinned-icon { }
-    .comment-message { font-family: 'Open Sans', sans-serif; font-size: 14px; fill: #cbd5e1; }
+    .comment-message { font-family: 'Open Sans', sans-serif; font-size: 16px; fill: #cbd5e1; }
     ]]>
   </style>
   ${renderedLines.join('\n')}
