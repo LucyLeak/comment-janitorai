@@ -65,9 +65,9 @@ export default function Home() {
   return (
     <div id="MainCore" style={{
       minHeight: '100vh',
-      background: '#181c18',
+      background: '#000',
       fontFamily: 'Fira Mono, Consolas, monospace',
-      color: '#00ff66',
+      color: '#fff',
       paddingBottom: '4rem',
       letterSpacing: '0.01em',
       position: 'relative',
@@ -86,33 +86,35 @@ export default function Home() {
       }} />
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;700&display=swap');
-        body { margin:0; background:transparent; }
+        body { margin:0; background:#000; }
         * { box-sizing:border-box; }
-        a { color:#00ff66; text-decoration:underline; }
+        a { color:#fff; text-decoration:underline; }
         a:hover { color:#fff; }
         #MainCore {
-          background:#181c18;
+          background:#000;
+          color:#fff;
         }
         .terminal {
-          background:rgba(24,28,24,0.98);
-          border:2px solid #00ff66;
+          background:#000;
+          border:2px solid #fff;
           border-radius:0;
-          box-shadow:0 0 24px #00ff6640,0 0 0 4px #0f1a0f;
+          box-shadow:none;
           padding:2em 1.2em 1.2em 1.2em;
           margin:2em auto;
           max-width:700px;
           font-family:'Fira Mono', Consolas, monospace;
           position:relative;
           overflow:hidden;
+          color:#fff;
         }
         .terminal-title {
           font-family:'Fira Mono', Consolas, monospace;
           font-size:1.5em;
-          color:#00ff66;
+          color:#fff;
           margin-bottom:0.7em;
           text-align:left;
           letter-spacing:0.04em;
-          border-bottom:1px solid #00ff66;
+          border-bottom:1px solid #fff;
           padding-bottom:0.3em;
           margin-left:0.1em;
         }
@@ -125,7 +127,7 @@ export default function Home() {
           display:inline-block;
           width:0.7em;
           height:1.1em;
-          background:#00ff66;
+          background:#fff;
           margin-left:0.2em;
           vertical-align:middle;
           animation: blink 1s steps(1) infinite;
@@ -147,9 +149,9 @@ export default function Home() {
           90% { opacity: 0.20; }
         }
         .comment-rules {
-          background:rgba(24,28,24,0.7);
-          border:1.5px dashed #00ff66;
-          color:#00ff66;
+          background:#000;
+          border:1px solid #fff;
+          color:#fff;
           padding:1em 1.5em;
           margin:1.5em auto 2em;
           font-size:1.1em;
@@ -164,45 +166,45 @@ export default function Home() {
           margin-bottom:.5em;
           font-weight:700;
           font-family:'Fira Mono', Consolas, monospace;
-          color:#00ff66;
+          color:#fff;
           font-size:1.1em;
         }
         input,textarea {
           width:100%;
           padding:1em;
           margin-bottom:1.1em;
-          background:rgba(24,28,24,0.9);
-          border:1.5px solid #00ff66;
-          color:#00ff66;
+          background:#000;
+          border:1.5px solid #fff;
+          color:#fff;
           border-radius:0;
           font-family:'Fira Mono', Consolas, monospace;
           font-size:1.1em;
           outline:none;
-          box-shadow:0 1px 4px #00ff6620 inset;
+          box-shadow:none;
           transition: border 0.2s;
         }
         input:focus,textarea:focus {
           border:1.5px solid #fff;
-          background:rgba(24,28,24,1);
+          background:#111;
         }
         button {
-          background:linear-gradient(90deg,#00ff66 60%,#0f1a0f 100%);
-          color:#181c18;
+          background:#fff;
+          color:#000;
           border:none;
           padding:.8em 2em;
           font-family:'Fira Mono', Consolas, monospace;
           font-size:1.1em;
           border-radius:0;
           cursor:pointer;
-          box-shadow:0 1px 8px #00ff6620;
+          box-shadow:none;
           font-weight:700;
           letter-spacing:0.04em;
           margin-top:0.5em;
-          transition: background 0.2s;
+          transition: background 0.2s, color 0.2s;
         }
         button:hover {
-          background:linear-gradient(90deg,#0f1a0f 60%,#00ff66 100%);
-          color:#00ff66;
+          background:#222;
+          color:#fff;
         }
         #comments-list {
           list-style:none;
@@ -210,42 +212,49 @@ export default function Home() {
           padding:0;
         }
         .comment {
-          background:rgba(24,28,24,0.8);
-          border:1.5px solid #00ff66;
+          background:#000;
+          border:1.5px solid #fff;
           padding:1em 1.1em;
           margin-bottom:1.1em;
           border-radius:0;
-          box-shadow:0 1px 6px #00ff6620;
+          box-shadow:none;
           position:relative;
           font-family:'Fira Mono', Consolas, monospace;
+          color:#fff;
         }
         .comment .author {
           display:block;
           font-family:'Fira Mono', Consolas, monospace;
-          font-size:1.05em;
+          font-size:1.15em;
           color:#fff;
           margin-bottom:.3em;
         }
         .comment .text {
           margin:.3em 0;
-          font-size:1.08em;
-          color:#00ff66;
+          font-size:1.15em;
+          color:#fff;
           font-family:'Fira Mono', Consolas, monospace;
         }
         .comment .time {
-          font-size:.92em;
-          color:#00ff66;
+          font-size:.98em;
+          color:#fff;
           font-family:'Fira Mono', Consolas, monospace;
         }
         .char-count {
           text-align:right;
-          color:#00ff66;
+          color:#fff;
           font-size:0.95em;
           font-family:'Fira Mono', Consolas, monospace;
         }
         @media (max-width: 600px) {
-          .terminal { padding:1.1em 0.3em 1.2em 0.3em; }
+          .terminal { padding:1.1em 0.3em 1.2em 0.3em; max-width:100vw; }
           .terminal-title { font-size:1.1em; }
+          .comment-rules { max-width:98vw; padding:0.7em 0.5em; }
+          #MainCore { padding-bottom:2em; }
+          main { max-width:100vw !important; }
+          .comment { padding:0.7em 0.3em; font-size:1em; }
+          input,textarea { font-size:1em; padding:0.7em; }
+          button { font-size:1em; padding:.7em 1.2em; }
         }
       `}</style>
       <nav style={{
@@ -298,7 +307,14 @@ export default function Home() {
               ? <p style={{ color: '#00ff66', textAlign: 'center', fontFamily: 'Fira Mono, Consolas, monospace' }}>Be the first to comment!</p>
               : comments.map(c => (
                 <li key={c.id || c.created_at} className="comment">
-                  <span className="author">{c.name}</span>
+                  <span className="author">{c.name}
+                    {c.liked_by_owner && (
+                      <img src="/likedC.png" alt="Liked" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle' }} />
+                    )}
+                    {c.pinned && (
+                      <img src="/pinned.png" alt="Pinned" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle', float: 'right' }} />
+                    )}
+                  </span>
                   <p className="text">{c.message}</p>
                   <span className="time">{getTimeAgo(c.created_at)}</span>
                 </li>
