@@ -138,15 +138,16 @@ export default async function handler(req, res) {
 
     // Icons (liked, pinned) as separate <image> elements
     let iconX = padding + nameWidth + dateWidth + 32;
+    const iconSize = 18; // Set both icons to the same size
     if (comment.liked_by_owner && likedIcon) {
-      renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${yOffset + rowHeight - 22}" width="16" height="16" class="liked-icon"/>`);
-      iconX += 20;
+      renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${yOffset + rowHeight - iconSize - 4}" width="${iconSize}" height="${iconSize}" class="liked-icon"/>`);
+      iconX += iconSize + 4;
     }
     // Pinned icon: always in the top-right corner of the comment block
     if (comment.pinned && pinnedIcon) {
-      const pinnedX = width - padding - 16; // 16px from right edge
-      const pinnedY = yOffset + 4; // 4px from top edge
-      renderedLines.push(`<image href="${pinnedIcon}" x="${pinnedX}" y="${pinnedY}" width="16" height="16" class="pinned-icon"/>`);
+      const pinnedX = width - padding - iconSize;
+      const pinnedY = yOffset + 4;
+      renderedLines.push(`<image href="${pinnedIcon}" x="${pinnedX}" y="${pinnedY}" width="${iconSize}" height="${iconSize}" class="pinned-icon"/>`);
     }
 
     // Message block
