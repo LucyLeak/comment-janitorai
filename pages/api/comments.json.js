@@ -2,7 +2,7 @@ import { getComments } from '../../lib/db';
 
 export default async function handler(req, res) {
   try {
-    const comments = await getComments(5);
+    const comments = await getComments(); // Remove limit to get all comments
     return res.status(200).json({ comments });
   } catch (err) {
     console.error('ERROR comments.json:', err);

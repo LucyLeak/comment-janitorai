@@ -304,7 +304,7 @@ export default function Home() {
           <div className="terminal-title"><span className="prompt">$</span> Comments <span className="blinking-cursor" /></div>
           <ul id="comments-list">
             {comments.length === 0
-              ? <p style={{ color: '#00ff66', textAlign: 'center', fontFamily: 'Fira Mono, Consolas, monospace' }}>Be the first to comment!</p>
+              ? <p style={{ color: '#fff', textAlign: 'center', fontFamily: 'Fira Mono, Consolas, monospace' }}>Be the first to comment!</p>
               : comments.map(c => (
                 <li key={c.id || c.created_at} className="comment">
                   <span className="author">{c.name}
