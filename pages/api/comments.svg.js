@@ -136,18 +136,16 @@ export default async function handler(req, res) {
       <tspan class="date" dx="8" style="font-size:15px;">${timeAgo}</tspan>
     </text>`);
 
-    // Icons (liked, pinned) as separate <image> elements
-    let iconX = padding + nameWidth + dateWidth + 32;
-    const iconSize = 18; // Set both icons to the same size
-    if (comment.liked_by_owner && likedIcon) {
-      renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${yOffset + rowHeight - iconSize - 4}" width="${iconSize}" height="${iconSize}" class="liked-icon"/>`);
-      iconX += iconSize + 4;
-    }
-    // Pinned icon: always in the top-right corner of the comment block
+    // Icons (pinned and liked) in the top-right corner
+    const iconSize = 18;
+    let iconX = width - padding - iconSize;
+    const iconY = yOffset + 4;
     if (comment.pinned && pinnedIcon) {
-      const pinnedX = width - padding - iconSize;
-      const pinnedY = yOffset + 4;
-      renderedLines.push(`<image href="${pinnedIcon}" x="${pinnedX}" y="${pinnedY}" width="${iconSize}" height="${iconSize}" class="pinned-icon"/>`);
+      renderedLines.push(`<image href="${pinnedIcon}" x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" class="pinned-icon"/>`);
+      iconX -= iconSize + 6; // 6px gap between icons
+    }
+    if (comment.liked_by_owner && likedIcon) {
+      renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" class="liked-icon"/>`);
     }
 
     // Message block
@@ -162,7 +160,7 @@ export default async function handler(req, res) {
     // End comment block group
     renderedLines.push(`</g>`);
 
-    yOffset += blockHeight + verticalSpacing;
+    yOffset += blockHeight + 4; // Reduced verticalSpacing for less distance between comments
   });
 
   const height = yOffset;
