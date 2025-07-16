@@ -148,10 +148,11 @@ export default async function handler(req, res) {
       renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" class="liked-icon"/>`);
     }
 
-    // Message block
+    // Message block with extra padding below the name
+    const nameBottomPadding = 8; // Adjust this value for more/less space
     for (let i = 0; i < wrapped.length; i++) {
       renderedLines.push(
-        `<text x="${padding}" y="${yOffset + lineHeight + blockPadding + i * lineHeight}" class="comment-message" style="font-size:16px;">
+        `<text x="${padding}" y="${yOffset + lineHeight + blockPadding + nameBottomPadding + i * lineHeight}" class="comment-message" style="font-size:16px;">
           <tspan class="msg" style="font-size:16px;">${wrapped[i]}</tspan>
         </text>`
       );
