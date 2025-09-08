@@ -4,17 +4,18 @@ Este arquivo explica como funciona o banco de dados e o arquivo `lib/db.js`.
 
 ## O que é o banco de dados?
 
-O banco de dados é onde todos os comentários ficam guardados. Usamos o Supabase, que é gratuito e fácil de usar.
+O banco de dados é onde todos os comentários ficam guardados. Eu uso o Supabase, que é gratuito e fácil de usar.
+DB, por exemplo, é a abreviação de DataBase (Banco de Dados)
 
 ## Estrutura da tabela
 
-A tabela principal se chama `comments` e tem os seguintes campos:
+A tabela principal se chama `comments` (você pode colocar o nome que quiser, só precisa editar no código para o supabase reconhecer o nome) e tem os seguintes campos:
 - `id`: Identificador único do comentário.
 - `created_at`: Data e hora em que o comentário foi criado.
 - `name`: Nome de quem comentou.
 - `message`: Mensagem do comentário.
-- `liked_by_owner`: Se o comentário foi curtido pelo dono do site.
-- `pinned`: Se o comentário foi fixado.
+- `liked_by_owner`: Se o comentário foi curtido por você.
+- `pinned`: Se o comentário foi fixado por você.
 
 ## O que faz o arquivo `lib/db.js`?
 
@@ -25,7 +26,7 @@ A tabela principal se chama `comments` e tem os seguintes campos:
 ## Personalização
 
 - Para mudar como os dados são salvos ou buscados, edite o arquivo `lib/db.js`.
-- Para adicionar novos campos, altere a tabela no Supabase e adapte o código.
+- Para adicionar novos campos, altere a tabela no Supabase e adapte o código. (Requer conhecimento avançado em JavaScript)
 
 ---
 

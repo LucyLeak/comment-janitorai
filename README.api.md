@@ -11,8 +11,8 @@ A API é o "cérebro" do sistema. Ela recebe os pedidos do site (frontend), conv
 - **`comments.js`**: Recebe novos comentários (POST) e lista todos os comentários (GET).
 - **`comments.json.js`**: Fornece os comentários em formato JSON para o frontend.
 - **`comments.svg.js`**: Gera uma imagem SVG com os comentários mais recentes, para ser usada em outros sites.
-- **`comments/[id]/like.js`**: Permite curtir um comentário específico.
-- **`comments/[id]/pin.js`**: Permite fixar um comentário específico.
+- **`comments/[id]/like.js`**: Permite que dentro do supabase, você possa dar um coraçãozinho no comentário.
+- **`comments/[id]/pin.js`**: Permite que dentro do supabase, você possa fixar um ou vários comentários.
 
 ## Como funciona?
 

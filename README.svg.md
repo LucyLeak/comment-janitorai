@@ -4,18 +4,18 @@ Este arquivo explica como funciona a geração da imagem SVG dos comentários, f
 
 ## O que é SVG?
 
-SVG é um tipo de imagem que pode mostrar textos e desenhos de forma dinâmica. Neste projeto, usamos SVG para mostrar os comentários mais recentes como uma imagem que pode ser colocada em qualquer site.
+SVG é um tipo de imagem vetorizada que pode mostrar textos e desenhos de forma dinâmica sem perder a qualidade. Neste projeto, usamos SVG para mostrar os comentários mais recentes como uma imagem que pode ser colocada no Janitor, assim como catbox, imgur, etc.
 
 ## Como funciona?
 
-- O arquivo `comments.svg.js` busca os comentários mais recentes no banco de dados.
+- O arquivo `comments.svg.js` busca os comentários mais recentes no [banco de dados](README.db.md).
 - Ele monta um código SVG, colocando os textos dos comentários, ícones e estilos.
 - O resultado é uma imagem que se atualiza automaticamente sempre que alguém comenta.
 
 ## Como usar?
 
 - Basta acessar o link `/api/comments.svg` do seu site (exemplo: `https://seu-projeto.vercel.app/api/comments.svg`).
-- Você pode copiar esse link e usar como imagem em qualquer outro site ou perfil do GitHub.
+- Você pode copiar esse link e usar como imagem no Janitor.
 
 ## Personalização
 
@@ -25,4 +25,4 @@ SVG é um tipo de imagem que pode mostrar textos e desenhos de forma dinâmica. 
 ---
 
 **Resumo:**
-A geração de SVG transforma os comentários em uma imagem dinâmica, fácil de compartilhar e usar em outros sites.
+A geração de SVG transforma os comentários em uma imagem dinâmica, fácil de compartilhar e usar no Janitor.

@@ -1,8 +1,8 @@
 # Sistema de Comentários com Imagem SVG Dinâmica
 
-Este é um projeto Next.js que implementa um sistema de comentários com uma interface de terminal retro. A principal característica é a geração de uma imagem SVG dinâmica com os comentários mais recentes, ideal para ser incorporada em perfis do GitHub ou outros sites.
+Este é um projeto Next.js que implementa um sistema de comentários com uma interface de terminal retro. A principal característica é a geração de uma imagem SVG dinâmica com os comentários mais recentes, ideal para ser incorporada em perfis do Janitor ou outros sites.
 
-![Exemplo de SVG](https://raw.githubusercontent.com/lucyleak/comment-janitorai/main/public/example.png)
+![Exemplo de SVG](https://files.catbox.moe/uhd58m.png)
 
 ## Funcionalidades
 
@@ -16,7 +16,7 @@ Este é um projeto Next.js que implementa um sistema de comentários com uma int
 
 O projeto é dividido em três partes principais:
 
-1.  **Frontend (`pages/index.js`):** Uma página React que busca e exibe os comentários do banco de dados. Ela também contém o formulário para que os usuários possam postar novos comentários.
+1.  **Frontend (`pages/index.js`):** Uma página React que busca e exibe os comentários do [banco de dados](README.db.md). Ela também contém o formulário para que os usuários possam postar novos comentários.
 2.  **API do Next.js (`pages/api/`):**
     -   `comments.js`: Lida com a criação (`POST`) e listagem (`GET`) de comentários.
     -   `comments.json.js`: Fornece os comentários em formato JSON para o frontend.
@@ -53,7 +53,7 @@ npm install
 
 ### 4. Configure o Supabase
 
-O Supabase será nosso banco de dados.
+O Supabase será nosso [banco de dados](README.db.md).
 
 1.  Vá para [supabase.com](https://supabase.com) e crie um novo projeto.
 2.  Após a criação, vá para **SQL Editor** no menu lateral.
