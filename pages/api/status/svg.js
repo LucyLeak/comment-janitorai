@@ -180,9 +180,9 @@ export default async function handler(req, res) {
   const width = 392;
   const height = 76;
   const padding = 8;
-  const nameSize = 12;
-  const msgSize = 11;
-  const lineHeight = 14;
+  const nameSize = 14;
+  const msgSize = 13;
+  const lineHeight = 16;
   const emojiSize = 12;
   const avatarSize = 20;
   const avatarGap = 6;
