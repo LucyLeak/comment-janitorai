@@ -180,13 +180,13 @@ export default async function handler(req, res) {
   const width = 228;
   const height = 266;
   const padding = 10;
-  const nameSize = 11;
-  const msgSize = 10;
-  const lineHeight = 13;
+  const nameSize = 12;
+  const msgSize = 11;
+  const lineHeight = 14;
   const emojiSize = 12;
   const avatarSize = 18;
   const avatarGap = 6;
-  const maxComments = 4;
+  const maxComments = 6;
   const backgroundUrl = getBase64PublicImage('background.png');
 
   const parentComments = comments.filter(c => !c.parent_id);
