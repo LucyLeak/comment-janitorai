@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 
 const getTimeAgo = (timestamp) => {
   if (!timestamp) return '';
@@ -63,266 +63,270 @@ export default function Home() {
   };
 
   return (
-    <div id="MainCore" style={{
-      minHeight: '100vh',
-      background: '#000',
-      fontFamily: 'Fira Mono, Consolas, monospace',
-      color: '#fff',
-      paddingBottom: '4rem',
-      letterSpacing: '0.01em',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* CRT scanlines and flicker */}
-      <div style={{
-        pointerEvents: 'none',
-        position: 'fixed',
-        inset: 0,
-        zIndex: 0,
-        opacity: 0.18,
-        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #0f1a0f 3px, transparent 4px)',
-        mixBlendMode: 'screen',
-        animation: 'crt-flicker 1.2s infinite',
-      }} />
+    <div id="MainCore" className="crt">
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;700&display=swap');
-        body { margin:0; background:#000; }
-        * { box-sizing:border-box; }
-        a { color:#fff; text-decoration:underline; }
-        a:hover { color:#fff; }
-        #MainCore {
-          background:#000;
-          color:#fff;
+        @font-face {
+          font-family: 'smalle';
+          src: url(https://files.catbox.moe/5vgwr0.ttf) format('truetype');
         }
-        .terminal {
-          background:#000;
-          border:2px solid #fff;
-          border-radius:0;
-          box-shadow:none;
-          padding:2em 1.2em 1.2em 1.2em;
-          margin:2em auto;
-          max-width:700px;
-          font-family:'Fira Mono', Consolas, monospace;
-          position:relative;
-          overflow:hidden;
-          color:#fff;
+        :root {
+          --panel: #d4d4d4;
+          --panel-lite: #f2f2f2;
+          --ink: #303030;
+          --border: #000;
+          --grid: #969696;
+          --link: #0400ff;
         }
-        .terminal-title {
-          font-family:'Fira Mono', Consolas, monospace;
-          font-size:1.5em;
-          color:#fff;
-          margin-bottom:0.7em;
-          text-align:left;
-          letter-spacing:0.04em;
-          border-bottom:1px solid #fff;
-          padding-bottom:0.3em;
-          margin-left:0.1em;
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          background-image: url(background.gif);
+          background-color: #f0efed;
+          overflow-y: scroll;
+          cursor: url(https://cur.cursors-4u.net/mechanics/mec-5/mec443.cur), auto;
+          font-family: "MS UI Gothic", "MS PGothic", sans-serif;
+          color: var(--ink);
         }
-        .terminal-title .prompt {
-          color:#fff;
-          font-weight:bold;
-          margin-right:0.3em;
+        a { color: var(--link); text-decoration: underline; }
+        h1 {
+          color: var(--ink);
+          font-size: 24px;
+          text-align: center;
+          font-family: 'smalle', "MS UI Gothic", sans-serif;
+          margin: 10px 0 4px 0;
         }
-        .blinking-cursor {
-          display:inline-block;
-          width:0.7em;
-          height:1.1em;
-          background:#fff;
-          margin-left:0.2em;
-          vertical-align:middle;
-          animation: blink 1s steps(1) infinite;
+        hr {
+          display: block;
+          margin: 0.5em auto;
+          color: gray;
+          overflow: hidden;
+          border-style: inset;
+          border-width: 1px;
         }
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
+        .crt::before {
+          content: " ";
+          display: block;
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+            linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+          background-size: 100% 2px, 3px 100%;
+          z-index: 1;
+          pointer-events: none;
         }
-        @keyframes crt-flicker {
-          0%, 100% { opacity: 0.18; }
-          10% { opacity: 0.22; }
-          20% { opacity: 0.15; }
-          30% { opacity: 0.20; }
-          40% { opacity: 0.16; }
-          50% { opacity: 0.19; }
-          60% { opacity: 0.17; }
-          70% { opacity: 0.21; }
-          80% { opacity: 0.16; }
-          90% { opacity: 0.20; }
+        .container {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          gap: 10px;
+          margin: 0 auto;
+          padding: 170px 10px 40px;
+          min-height: 100vh;
+          box-sizing: border-box;
+          z-index: 2;
+        }
+        .header {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          margin-top: 10px;
+          transform: translateX(-50%);
+          width: 1050px;
+          max-width: calc(100% - 20px);
+          height: 150px;
+          background-color: var(--panel);
+          border: 1px solid var(--border);
+          background-image: url(https://kaththingy.neocities.org/ImgStorage/background.jpg);
+          background-position: 50%;
+        }
+        #Left-column {
+          margin: 3px;
+          width: 180px;
+          padding: 10px;
+          background-image: url(https://kaththingy.neocities.org/ImgStorage/halftone_1768490195.png);
+          background-size: 150px;
+          background-color: var(--panel);
+          border: 1px solid var(--border);
+          font-size: 14px;
+          line-height: 1.4;
+          word-break: break-word;
+        }
+        .MenuBox {
+          border: 1px solid #5e5e5e;
+          background: var(--panel-lite);
+          margin-top: -6px;
+          padding: 6px;
+        }
+        #Left-column .styled-link {
+          display: block;
+          padding: 4px 0 4px 4px;
+          color: #000;
+          background-color: var(--panel-lite);
+          text-decoration: none;
+        }
+        #holder {
+          margin: 5px;
+          width: 680px;
+          max-width: 100%;
+          padding: 10px;
+          background: var(--panel);
+          border: 1px solid var(--border);
+          font-size: 14px;
+        }
+        .panel-title {
+          font-family: 'smalle', "MS UI Gothic", sans-serif;
+          font-size: 20px;
+          margin: 2px 0 8px;
+          text-align: center;
         }
         .comment-rules {
-          background:#000;
-          border:1px solid #fff;
-          color:#fff;
-          padding:1em 1.5em;
-          margin:1.5em auto 2em;
-          font-size:1.1em;
-          border-radius:0;
-          max-width:600px;
-          font-family:'Fira Mono', Consolas, monospace;
+          border: 1px solid var(--grid);
+          padding: 8px;
+          background: #efefef;
+          margin-bottom: 10px;
         }
-        .comment-rules ul { margin:0; padding-left:1.2em; }
-        .comment-rules li { margin-bottom:.3em; }
+        .comment-rules ul { margin: 0; padding-left: 18px; }
         label {
-          display:block;
-          margin-bottom:.5em;
-          font-weight:700;
-          font-family:'Fira Mono', Consolas, monospace;
-          color:#fff;
-          font-size:1.1em;
+          display: block;
+          margin-bottom: 4px;
+          font-weight: 700;
+          font-size: 14px;
         }
-        input,textarea {
-          width:100%;
-          padding:1em;
-          margin-bottom:1.1em;
-          background:#000;
-          border:1.5px solid #fff;
-          color:#fff;
-          border-radius:0;
-          font-family:'Fira Mono', Consolas, monospace;
-          font-size:1.1em;
-          outline:none;
-          box-shadow:none;
-          transition: border 0.2s;
+        input, textarea {
+          width: 100%;
+          padding: 8px;
+          margin-bottom: 8px;
+          background: #fff;
+          border: 1px solid #5e5e5e;
+          color: #000;
+          font-family: "MS UI Gothic", "MS PGothic", sans-serif;
+          font-size: 14px;
+          outline: none;
         }
-        input:focus,textarea:focus {
-          border:1.5px solid #fff;
-          background:#111;
+        input:focus, textarea:focus {
+          border-color: #000;
+          background: #f7f7f7;
         }
         button {
-          background:#fff;
-          color:#000;
-          border:none;
-          padding:.8em 2em;
-          font-family:'Fira Mono', Consolas, monospace;
-          font-size:1.1em;
-          border-radius:0;
-          cursor:pointer;
-          box-shadow:none;
-          font-weight:700;
-          letter-spacing:0.04em;
-          margin-top:0.5em;
-          transition: background 0.2s, color 0.2s;
-        }
-        button:hover {
-          background:#222;
-          color:#fff;
+          padding: 4px 18px;
+          background: var(--panel-lite);
+          color: #000;
+          border: 1px solid #000;
+          font-family: "MS UI Gothic", "MS PGothic", sans-serif;
+          cursor: pointer;
+          border-color: #5e5e5e;
+          box-shadow: inset 13px 0px 6px -10px rgba(66, 66, 66, 0.2),
+            inset -13px 0px 6px -10px rgba(66, 66, 66, 0.56),
+            inset 0px 13px 6px -10px #ffffff,
+            inset 0px -13px 6px -10px rgba(66, 66, 66, 0.38);
         }
         #comments-list {
-          list-style:none;
-          margin:0 0 1em 0;
-          padding:0;
+          list-style: none;
+          margin: 0;
+          padding: 0;
         }
         .comment {
-          background:#000;
-          border:1.5px solid #fff;
-          padding:1em 1.1em;
-          margin-bottom:1.1em;
-          border-radius:0;
-          box-shadow:none;
-          position:relative;
-          font-family:'Fira Mono', Consolas, monospace;
-          color:#fff;
+          border: 1px solid var(--grid);
+          padding: 8px;
+          margin-bottom: 8px;
+          background: #f7f7f7;
         }
         .comment .author {
-          display:block;
-          font-family:'Fira Mono', Consolas, monospace;
-          font-size:1.15em;
-          color:#fff;
-          margin-bottom:.3em;
+          display: block;
+          font-weight: 700;
+          margin-bottom: 4px;
         }
         .comment .text {
-          margin:.3em 0;
-          font-size:1.15em;
-          color:#fff;
-          font-family:'Fira Mono', Consolas, monospace;
+          margin: 4px 0;
         }
         .comment .time {
-          font-size:.98em;
-          color:#fff;
-          font-family:'Fira Mono', Consolas, monospace;
+          font-size: 12px;
+          color: #4a4a4a;
         }
         .char-count {
-          text-align:right;
-          color:#fff;
-          font-size:0.95em;
-          font-family:'Fira Mono', Consolas, monospace;
+          text-align: right;
+          font-size: 12px;
+          color: #4a4a4a;
         }
-        @media (max-width: 600px) {
-          .terminal { padding:1.1em 0.3em 1.2em 0.3em; max-width:100vw; }
-          .terminal-title { font-size:1.1em; }
-          .comment-rules { max-width:98vw; padding:0.7em 0.5em; }
-          #MainCore { padding-bottom:2em; }
-          main { max-width:100vw !important; }
-          .comment { padding:0.7em 0.3em; font-size:1em; }
-          input,textarea { font-size:1em; padding:0.7em; }
-          button { font-size:1em; padding:.7em 1.2em; }
+        .empty-note {
+          text-align: center;
+          color: #4a4a4a;
+          margin: 8px 0 0;
+        }
+        @media (max-width: 900px) {
+          .container { flex-direction: column; align-items: center; padding-top: 190px; }
+          #Left-column { width: 95%; max-width: 520px; }
+          #holder { width: 95%; }
+          .header { height: 120px; }
         }
       `}</style>
-      <nav style={{
-        width: '100%',
-        background: 'rgba(24,28,24,0.9)',
-        borderBottom: '2px solid #00ff66',
-        boxShadow: '0 1px 8px #00ff6620',
-        padding: '1.1em 0',
-        marginBottom: '2em',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 2,
-        fontFamily: 'Fira Mono, Consolas, monospace',
-        fontSize: '1.1em',
-      }}>
-        <a href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">
-          ⬅ Back to my profile
-        </a>
-      </nav>
-      <main style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <div className="comment-rules">
-          <ul>
-            <li>Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
-          </ul>
-        </div>
-        <section className="terminal">
-          <div className="terminal-title"><span className="prompt">$</span> Add a Comment <span className="blinking-cursor" /></div>
-          <form onSubmit={handleSubmit} autoComplete="off">
-            <label>Your Name</label>
-            <input
-              type="text" value={name}
-              onChange={e => setName(e.target.value)}
-              maxLength={30} required />
-            <label>Comment</label>
-            <textarea
-              ref={textareaRef}
-              value={message}
-              onChange={e => { setMessage(e.target.value); setCharCount(e.target.value.length); }}
-              maxLength={MAX_CHARS}
-              rows={3}
-              required />
-            <div className="char-count">{charCount}/{MAX_CHARS}</div>
-            <button type="submit">Post Comment</button>
-          </form>
-        </section>
-        <section className="terminal">
-          <div className="terminal-title"><span className="prompt">$</span> Comments <span className="blinking-cursor" /></div>
-          <ul id="comments-list">
-            {comments.length === 0
-              ? <p style={{ color: '#fff', textAlign: 'center', fontFamily: 'Fira Mono, Consolas, monospace' }}>Be the first to comment!</p>
-              : comments.map(c => (
-                <li key={c.id || c.created_at} className="comment">
-                  <span className="author">{c.name}
-                    {c.liked_by_owner && (
-                      <img src="/likedC.png" alt="Liked" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle' }} />
-                    )}
-                    {c.pinned && (
-                      <img src="/pinned.png" alt="Pinned" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle', float: 'right' }} />
-                    )}
-                  </span>
-                  <p className="text">{c.message}</p>
-                  <span className="time">{getTimeAgo(c.created_at)}</span>
-                </li>
-              ))
-            }
-          </ul>
-        </section>
-      </main>
+      <div className="header" />
+      <div className="container">
+        <aside id="Left-column">
+          <div className="MenuBox">
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>main</div>
+            <a className="styled-link" href="https://kaththingy.neocities.org/about" target="_blank">about</a>
+            <a className="styled-link" href="https://kaththingy.neocities.org/comments" target="_blank">comments</a>
+            <a className="styled-link" href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">janitorai</a>
+          </div>
+        </aside>
+        <main id="holder">
+          <h1>comments</h1>
+          <hr />
+          <div className="comment-rules">
+            <ul>
+              <li>Give your feedback here! Just avoid commenting on things that break JanitorAI's rules. Breaking this rule will cause me to delete your comment.</li>
+            </ul>
+          </div>
+          <section>
+            <div className="panel-title">Add a Comment</div>
+            <form onSubmit={handleSubmit} autoComplete="off">
+              <label>Your Name</label>
+              <input
+                type="text" value={name}
+                onChange={e => setName(e.target.value)}
+                maxLength={30} required />
+              <label>Comment</label>
+              <textarea
+                ref={textareaRef}
+                value={message}
+                onChange={e => { setMessage(e.target.value); setCharCount(e.target.value.length); }}
+                maxLength={MAX_CHARS}
+                rows={3}
+                required />
+              <div className="char-count">{charCount}/{MAX_CHARS}</div>
+              <button type="submit">Post Comment</button>
+            </form>
+          </section>
+          <hr />
+          <section>
+            <div className="panel-title">Comments</div>
+            <ul id="comments-list">
+              {comments.length === 0
+                ? <p className="empty-note">Be the first to comment!</p>
+                : comments.map(c => (
+                  <li key={c.id || c.created_at} className="comment">
+                    <span className="author">{c.name}
+                      {c.liked_by_owner && (
+                        <img src="/likedC.png" alt="Liked" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle' }} />
+                      )}
+                      {c.pinned && (
+                        <img src="/pinned.png" alt="Pinned" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle', float: 'right' }} />
+                      )}
+                    </span>
+                    <p className="text">{c.message}</p>
+                    <span className="time">{getTimeAgo(c.created_at)}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+        </main>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,241 @@
+@font-face {
+  font-family: 'smalle';
+  src: url(https://files.catbox.moe/5vgwr0.ttf) format('truetype');
+}
+
+:root {
+  --panel-bg: #d4d4d4;
+  --panel-border: #000000;
+  --panel-inner: #f2f2f2;
+  --soft-border: #5e5e5e;
+  --text: #303030;
+  --link: #0400ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-image: url(https://kaththingy.neocities.org/about/background.gif);
+  background-color: #f0efed;
+  overflow-y: scroll;
+  cursor: url(https://cur.cursors-4u.net/mechanics/mec-5/mec443.cur), auto;
+  font-family: 'MS UI Gothic', 'MS Gothic', sans-serif;
+  color: var(--text);
+}
+
+a {
+  color: var(--link);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--link);
+}
+
+.neo-root {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.crt::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.neo-header {
+  width: 760px;
+  height: 150px;
+  margin: 18px auto 6px;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  background-image: url(https://kaththingy.neocities.org/ImgStorage/background.jpg);
+  background-position: 50% 50%;
+  background-size: cover;
+}
+
+.neo-container {
+  width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.neo-nav {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.neo-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.neo-title {
+  color: var(--text);
+  font-size: 24px;
+  text-align: center;
+  font-family: 'smalle', 'MS UI Gothic', sans-serif;
+  margin: 4px 0 10px 0;
+}
+
+.neo-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding: 10px 12px 14px;
+}
+
+.comment-rules {
+  background: var(--panel-inner);
+  border: 1px solid var(--soft-border);
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.comment-rules ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.comment-rules li {
+  margin-bottom: 4px;
+}
+
+label {
+  display: block;
+  margin: 6px 0 4px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: var(--panel-inner);
+  border: 1px solid var(--soft-border);
+  color: #000;
+  font-family: 'MS UI Gothic', 'MS Gothic', sans-serif;
+  font-size: 14px;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #000;
+  background: #ffffff;
+}
+
+#btp {
+  padding: 4px 18px;
+  background: var(--panel-inner);
+  color: #000;
+  border: 1px solid #000;
+  font-family: 'MS UI Gothic', 'MS Gothic', sans-serif;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--soft-border);
+  box-shadow: inset 13px 0px 6px -10px rgba(66, 66, 66, 0.2),
+    inset -13px 0px 6px -10px rgba(66, 66, 66, 0.56),
+    inset 0px 13px 6px -10px #ffffff,
+    inset 0px -13px 6px -10px rgba(66, 66, 66, 0.38);
+}
+
+#btp:hover {
+  background: #e6e6e6;
+}
+
+#comments-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.comment {
+  background: var(--panel-inner);
+  border: 1px solid var(--soft-border);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.comment .author {
+  display: block;
+  font-size: 15px;
+  color: #000;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.comment .text {
+  margin: 4px 0 6px;
+  font-size: 14px;
+  color: #000;
+}
+
+.comment .time {
+  font-size: 12px;
+  color: #303030;
+}
+
+.comment-badge {
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.comment-badge.pinned {
+  float: right;
+}
+
+.char-count {
+  text-align: right;
+  color: #303030;
+  font-size: 12px;
+}
+
+.neo-empty {
+  color: #303030;
+  text-align: center;
+  margin: 10px 0 6px;
+  font-size: 14px;
+}
+
+@media (max-width: 860px) {
+  .neo-header,
+  .neo-container {
+    width: 94vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .neo-header {
+    height: 120px;
+  }
+
+  .neo-title {
+    font-size: 20px;
+  }
+}
