@@ -38,6 +38,8 @@ export default function Home() {
   const [replyAvatarDataUrl, setReplyAvatarDataUrl] = useState('');
   const [showReplyAvatarUploader, setShowReplyAvatarUploader] = useState(false);
   const MAX_CHARS = 100;
+  const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+  const MAX_AVATAR_MB = 5;
 
   const refreshComments = async () => {
     const res = await fetch('/api/comments.json');
@@ -130,6 +132,10 @@ export default function Home() {
   const handleAvatarFile = (file, isReply = false) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) return;
+    if (file.size > MAX_AVATAR_BYTES) {
+      alert(`Avatar too large. Max ${MAX_AVATAR_MB}MB.`);
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -340,6 +346,10 @@ export default function Home() {
             inset 0px 13px 6px -10px #ffffff,
             inset 0px -13px 6px -10px rgba(66, 66, 66, 0.38);
         }
+        button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
         #comments-list {
           list-style: none;
           margin: 0;
@@ -405,7 +415,7 @@ export default function Home() {
         }
         .emoji-panel {
           border: 1px solid #5e5e5e;
-          background: #f7f7f7;
+          background: #f2f2f2;
           padding: 6px;
           margin-bottom: 8px;
           display: flex;
@@ -440,11 +450,18 @@ export default function Home() {
           padding: 2px 10px;
         }
         .avatar-drop {
-          border: 1px dashed #777;
-          background: #f7f7f7;
-          padding: 8px;
+          border: 1px solid #5e5e5e;
+          background: #f2f2f2;
+          padding: 10px;
           margin-bottom: 8px;
           text-align: center;
+          font-size: 12px;
+          box-shadow: inset 13px 0px 6px -10px rgba(66, 66, 66, 0.2),
+            inset -13px 0px 6px -10px rgba(66, 66, 66, 0.2),
+            inset 0px 13px 6px -10px #ffffff;
+        }
+        .avatar-drop input[type="file"] {
+          font-family: "MS UI Gothic", "MS PGothic", sans-serif;
           font-size: 12px;
         }
         .avatar-preview {
@@ -455,8 +472,13 @@ export default function Home() {
           object-fit: cover;
         }
         @media (max-width: 900px) {
-          .container { padding-top: 190px; }
-          .header { height: 120px; }
+          .container { padding-top: 150px; }
+          .header { height: 110px; }
+          #holder { width: 100%; }
+          .name-row { grid-template-columns: 1fr; align-items: stretch; }
+          .form-actions { flex-direction: column; align-items: flex-start; }
+          .emoji-panel { max-height: 180px; }
+          .replies { margin-left: 8px; }
         }
       `}</style>
       <div className="header" />
@@ -503,7 +525,7 @@ export default function Home() {
                     handleAvatarFile(file, false);
                   }}
                 >
-                  Drop image here or
+                  Drop image here or (max 5MB)
                   <input
                     type="file"
                     accept="image/*"
@@ -620,7 +642,7 @@ export default function Home() {
                               handleAvatarFile(file, true);
                             }}
                           >
-                            Drop image here or
+                            Drop image here or (max 5MB)
                             <input
                               type="file"
                               accept="image/*"
