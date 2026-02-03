@@ -392,8 +392,14 @@ export default function Home() {
           margin-bottom: 6px;
           background: #f0f0f0;
         }
-        .emoji-toggle {
+        .form-actions {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
           margin-bottom: 8px;
+        }
+        .emoji-toggle {
           font-size: 12px;
           padding: 2px 10px;
         }
@@ -513,15 +519,17 @@ export default function Home() {
                 maxLength={MAX_CHARS}
                 rows={3}
                 required />
-              <div className="char-count">{charCount}/{MAX_CHARS}</div>
-              <button
-                type="button"
-                className="emoji-toggle"
-                onClick={() => setShowEmojiPicker(current => !current)}
-                disabled={emojiList.length === 0}
-              >
-                {emojiList.length === 0 ? 'No emojis found' : 'Emojis'}
-              </button>
+              <div className="form-actions">
+                <div className="char-count">{charCount}/{MAX_CHARS}</div>
+                <button
+                  type="button"
+                  className="emoji-toggle"
+                  onClick={() => setShowEmojiPicker(current => !current)}
+                  disabled={emojiList.length === 0}
+                >
+                  {emojiList.length === 0 ? 'No emojis found' : 'Emojis'}
+                </button>
+              </div>
               {showEmojiPicker && (
                 <div className="emoji-panel">
                   {emojiList.map(emoji => (
@@ -628,15 +636,17 @@ export default function Home() {
                           maxLength={MAX_CHARS}
                           rows={2}
                           required />
-                        <div className="char-count">{replyCharCount}/{MAX_CHARS}</div>
-                        <button
-                          type="button"
-                          className="emoji-toggle"
-                          onClick={() => setShowReplyEmojiPicker(current => !current)}
-                          disabled={emojiList.length === 0}
-                        >
-                          {emojiList.length === 0 ? 'No emojis found' : 'Emojis'}
-                        </button>
+                        <div className="form-actions">
+                          <div className="char-count">{replyCharCount}/{MAX_CHARS}</div>
+                          <button
+                            type="button"
+                            className="emoji-toggle"
+                            onClick={() => setShowReplyEmojiPicker(current => !current)}
+                            disabled={emojiList.length === 0}
+                          >
+                            {emojiList.length === 0 ? 'No emojis found' : 'Emojis'}
+                          </button>
+                        </div>
                         {showReplyEmojiPicker && (
                           <div className="emoji-panel">
                             {emojiList.map(emoji => (

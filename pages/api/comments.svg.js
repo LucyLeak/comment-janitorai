@@ -32,7 +32,7 @@ function approximateTextWidth(text, fontSize = 12) {
   const wideCharRegex = /[^\u0000-\u00ff]/g;
   const wideChars = (text.match(wideCharRegex) || []).length;
   const narrowChars = text.length - wideChars;
-  return (wideChars * fontSize) + (narrowChars * (fontSize * 0.6));
+  return (wideChars * fontSize) + (narrowChars * (fontSize * 0.55));
 }
 
 const ALLOWED_EXTS = new Set(['.png', '.gif', '.jpg', '.jpeg', '.webp']);
@@ -57,6 +57,18 @@ function getEmojiMap() {
     return map;
   } catch (err) {
     return {};
+  }
+}
+
+function getBase64PublicImage(fileName) {
+  try {
+    const filePath = path.join(process.cwd(), 'public', fileName);
+    const data = fs.readFileSync(filePath);
+    const ext = path.extname(fileName).toLowerCase();
+    const mime = ext === '.jpg' ? 'image/jpeg' : `image/${ext.replace('.', '')}`;
+    return `data:${mime};base64,${data.toString('base64')}`;
+  } catch (err) {
+    return '';
   }
 }
 
@@ -131,18 +143,27 @@ function wrapTokens(tokens, maxWidth, fontSize, emojiSize) {
 function renderLineTokens(tokens, x, y, fontSize, emojiSize) {
   let output = '';
   let cursorX = x;
+  let textBuffer = '';
+
+  const flushText = () => {
+    if (!textBuffer) return;
+    const safe = escapeXML(textBuffer);
+    output += `<text x="${cursorX}" y="${y}" class="msg" style="font-size:${fontSize}px;">${safe}</text>`;
+    cursorX += approximateTextWidth(textBuffer, fontSize);
+    textBuffer = '';
+  };
 
   tokens.forEach((token) => {
     if (token.type === 'emoji') {
+      flushText();
       output += `<image href="${token.value}" x="${cursorX}" y="${y - emojiSize + 2}" width="${emojiSize}" height="${emojiSize}" />`;
       cursorX += emojiSize;
     } else {
-      const safe = escapeXML(token.value);
-      output += `<text x="${cursorX}" y="${y}" class="msg" style="font-size:${fontSize}px;">${safe}</text>`;
-      cursorX += approximateTextWidth(token.value, fontSize);
+      textBuffer += token.value;
     }
   });
 
+  flushText();
   return output;
 }
 
@@ -163,14 +184,16 @@ export default async function handler(req, res) {
   const msgSize = 10;
   const lineHeight = 13;
   const emojiSize = 12;
+  const avatarSize = 18;
+  const avatarGap = 6;
   const maxComments = 4;
-  const backgroundUrl = 'public/background.png';
+  const backgroundUrl = getBase64PublicImage('background.png');
 
   const parentComments = comments.filter(c => !c.parent_id);
   const totalComments = parentComments.length;
   const limitedComments = parentComments.slice(0, maxComments);
 
-  let y = padding + nameSize + 4;
+  let y = padding + nameSize + 6;
   const renderedLines = [];
 
   limitedComments.forEach((comment) => {
@@ -178,21 +201,34 @@ export default async function handler(req, res) {
     const name = escapeXML(comment.name);
     const messageTokens = tokenizeWithEmojis(comment.message || '', emojiMap);
 
-    renderedLines.push(`<text x="${padding}" y="${y}" class="name" style="font-size:${nameSize}px;">${name}</text>`);
+    const hasAvatar = Boolean(comment.avatar_url);
+    const textStartX = hasAvatar ? padding + avatarSize + avatarGap : padding;
+    const maxTextWidth = width - (padding * 2) - (hasAvatar ? (avatarSize + avatarGap) : 0);
+    const wrapped = wrapTokens(messageTokens, maxTextWidth, msgSize, emojiSize);
+    const blockHeight = (lineHeight * (wrapped.length + 1)) + 10;
+    const blockTop = y - nameSize - 6;
+
+    renderedLines.push(`<rect x="${padding - 4}" y="${blockTop}" width="${width - (padding * 2) + 8}" height="${blockHeight}" rx="3" fill="#383838" opacity="0.9" />`);
+
+    if (hasAvatar) {
+      const avatarY = y - nameSize;
+      renderedLines.push(
+        `<image href="${comment.avatar_url}" x="${padding}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" />`
+      );
+    }
+
+    renderedLines.push(`<text x="${textStartX}" y="${y}" class="name" style="font-size:${nameSize}px;">${name}</text>`);
     renderedLines.push(`<text x="${width - padding}" y="${y}" class="date" style="font-size:9px;" text-anchor="end">${timeAgo}</text>`);
 
     y += lineHeight;
 
-    const maxTextWidth = width - (padding * 2);
-    const wrapped = wrapTokens(messageTokens, maxTextWidth, msgSize, emojiSize);
-
     wrapped.forEach((lineTokens) => {
       if (y > height - padding) return;
-      renderedLines.push(renderLineTokens(lineTokens, padding, y, msgSize, emojiSize));
+      renderedLines.push(renderLineTokens(lineTokens, textStartX, y, msgSize, emojiSize));
       y += lineHeight;
     });
 
-    y += 4;
+    y += 6;
   });
 
   if (totalComments > maxComments && y < height - 6) {
@@ -203,12 +239,7 @@ export default async function handler(req, res) {
 
   const svg = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  <defs>
-    <filter id="bgBlur" x="-10%" y="-10%" width="120%" height="120%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" />
-    </filter>
-  </defs>
-  <image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" />
+  ${backgroundUrl ? `<image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" />` : ''}
   <rect x="0" y="0" width="${width}" height="${height}" fill="rgba(0,0,0,0.45)" />
   <rect x="1" y="1" width="${width - 2}" height="${height - 2}" fill="rgba(20,20,20,0.75)" stroke="#5e5e5e" />
   <style>
