@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     try {
       const { data, error } = await supabase
         .from('comments')
-        .select('id, name, message, created_at, liked_by_owner, pinned, parent_id')
+        .select('id, name, message, created_at, liked_by_owner, pinned, parent_id, avatar_url')
         .order('pinned', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(50);
@@ -25,13 +25,13 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { name, message, parent_id = null } = req.body;
+      const { name, message, parent_id = null, avatar_url = null } = req.body;
       if (!name || !message) {
         return res.status(400).json({ error: 'Name and message are required.' });
       }
       const { error } = await supabase
         .from('comments')
-        .insert([{ name, message, parent_id }]);
+        .insert([{ name, message, parent_id, avatar_url }]);
       if (error) throw error;
       return res.status(200).json({ ok: true });
     } catch (error) {

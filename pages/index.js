@@ -29,10 +29,14 @@ export default function Home() {
   const [emojiList, setEmojiList] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showReplyEmojiPicker, setShowReplyEmojiPicker] = useState(false);
+  const [avatarDataUrl, setAvatarDataUrl] = useState('');
+  const [showAvatarUploader, setShowAvatarUploader] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [replyName, setReplyName] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [replyCharCount, setReplyCharCount] = useState(0);
+  const [replyAvatarDataUrl, setReplyAvatarDataUrl] = useState('');
+  const [showReplyAvatarUploader, setShowReplyAvatarUploader] = useState(false);
   const MAX_CHARS = 100;
 
   const refreshComments = async () => {
@@ -71,7 +75,12 @@ export default function Home() {
     await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: trimmedName, message: trimmedMessage, parent_id: null }),
+      body: JSON.stringify({
+        name: trimmedName,
+        message: trimmedMessage,
+        parent_id: null,
+        avatar_url: avatarDataUrl || null,
+      }),
     });
 
     await refreshComments();
@@ -79,6 +88,8 @@ export default function Home() {
     setMessage('');
     setCharCount(0);
     setShowEmojiPicker(false);
+    setAvatarDataUrl('');
+    setShowAvatarUploader(false);
   };
 
   const handleReplySubmit = async (e, parentId) => {
@@ -90,7 +101,12 @@ export default function Home() {
     await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: trimmedName, message: trimmedMessage, parent_id: parentId }),
+      body: JSON.stringify({
+        name: trimmedName,
+        message: trimmedMessage,
+        parent_id: parentId,
+        avatar_url: replyAvatarDataUrl || null,
+      }),
     });
 
     await refreshComments();
@@ -99,6 +115,8 @@ export default function Home() {
     setReplyMessage('');
     setReplyCharCount(0);
     setShowReplyEmojiPicker(false);
+    setReplyAvatarDataUrl('');
+    setShowReplyAvatarUploader(false);
   };
 
   const insertEmoji = (emojiName) => {
@@ -107,6 +125,22 @@ export default function Home() {
 
   const insertReplyEmoji = (emojiName) => {
     setReplyMessage(current => `:${emojiName}: ${current}`.trimStart());
+  };
+
+  const handleAvatarFile = (file, isReply = false) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      if (isReply) {
+        setReplyAvatarDataUrl(result);
+      } else {
+        setAvatarDataUrl(result);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const renderWithEmojis = (text) => {
@@ -128,7 +162,8 @@ export default function Home() {
             key={`emoji-${emojiName}-${key++}`}
             src={emojiUrl}
             alt={emojiName}
-            style={{ width: 16, height: 16, verticalAlign: 'middle', margin: '0 2px' }}
+            className="emoji-inline"
+            style={{ width: 16, height: 16, verticalAlign: 'text-bottom', margin: '0 2px' }}
           />
         );
       } else {
@@ -265,6 +300,13 @@ export default function Home() {
           font-weight: 700;
           font-size: 14px;
         }
+        .name-row {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 8px;
+          align-items: center;
+          margin-bottom: 6px;
+        }
         input, textarea {
           width: 100%;
           padding: 8px;
@@ -310,7 +352,9 @@ export default function Home() {
           background: #f7f7f7;
         }
         .comment .author {
-          display: block;
+          display: flex;
+          align-items: center;
+          gap: 6px;
           font-weight: 700;
           margin-bottom: 4px;
         }
@@ -380,6 +424,30 @@ export default function Home() {
           height: 16px;
           display: block;
         }
+        .emoji-inline {
+          display: inline-block;
+          position: relative;
+          z-index: 2;
+        }
+        .avatar-button {
+          font-size: 12px;
+          padding: 2px 10px;
+        }
+        .avatar-drop {
+          border: 1px dashed #777;
+          background: #f7f7f7;
+          padding: 8px;
+          margin-bottom: 8px;
+          text-align: center;
+          font-size: 12px;
+        }
+        .avatar-preview {
+          width: 32px;
+          height: 32px;
+          border: 1px solid #777;
+          background: #fff;
+          object-fit: cover;
+        }
         @media (max-width: 900px) {
           .container { padding-top: 190px; }
           .header { height: 120px; }
@@ -398,11 +466,46 @@ export default function Home() {
           <section>
             <div className="panel-title">Add a Comment</div>
             <form onSubmit={handleSubmit} autoComplete="off">
-              <label>Your Name</label>
-              <input
-                type="text" value={name}
-                onChange={e => setName(e.target.value)}
-                maxLength={30} required />
+              <div className="name-row">
+                <div>
+                  <label>Your Name</label>
+                  <input
+                    type="text" value={name}
+                    onChange={e => setName(e.target.value)}
+                    maxLength={30} required />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                  <button
+                    type="button"
+                    className="avatar-button"
+                    onClick={() => setShowAvatarUploader(current => !current)}
+                  >
+                    Avatar
+                  </button>
+                  {avatarDataUrl && (
+                    <img className="avatar-preview" src={avatarDataUrl} alt="avatar" />
+                  )}
+                </div>
+              </div>
+              {showAvatarUploader && (
+                <div
+                  className="avatar-drop"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    handleAvatarFile(file, false);
+                  }}
+                >
+                  Drop image here or
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleAvatarFile(e.target.files?.[0], false)}
+                    style={{ display: 'block', margin: '6px auto 0' }}
+                  />
+                </div>
+              )}
               <label>Comment</label>
               <textarea
                 value={message}
@@ -445,7 +548,11 @@ export default function Home() {
                 ? <p className="empty-note">Be the first to comment!</p>
                 : parentComments.map(c => (
                   <li key={c.id || c.created_at} className="comment">
-                    <span className="author">{renderWithEmojis(c.name)}
+                    <span className="author">
+                      {c.avatar_url && (
+                        <img className="avatar-preview" src={c.avatar_url} alt="avatar" />
+                      )}
+                      {renderWithEmojis(c.name)}
                       {c.liked_by_owner && (
                         <img src="/likedC.png" alt="Liked" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle' }} />
                       )}
@@ -465,6 +572,8 @@ export default function Home() {
                           setReplyMessage('');
                           setReplyCharCount(0);
                           setShowReplyEmojiPicker(false);
+                          setReplyAvatarDataUrl('');
+                          setShowReplyAvatarUploader(false);
                         }}
                       >
                         Reply
@@ -472,11 +581,46 @@ export default function Home() {
                     </div>
                     {replyTo === c.id && (
                       <form onSubmit={(e) => handleReplySubmit(e, c.id)} autoComplete="off" style={{ marginTop: 8 }}>
-                        <label>Your Name</label>
-                        <input
-                          type="text" value={replyName}
-                          onChange={e => setReplyName(e.target.value)}
-                          maxLength={30} required />
+                        <div className="name-row">
+                          <div>
+                            <label>Your Name</label>
+                            <input
+                              type="text" value={replyName}
+                              onChange={e => setReplyName(e.target.value)}
+                              maxLength={30} required />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                            <button
+                              type="button"
+                              className="avatar-button"
+                              onClick={() => setShowReplyAvatarUploader(current => !current)}
+                            >
+                              Avatar
+                            </button>
+                            {replyAvatarDataUrl && (
+                              <img className="avatar-preview" src={replyAvatarDataUrl} alt="avatar" />
+                            )}
+                          </div>
+                        </div>
+                        {showReplyAvatarUploader && (
+                          <div
+                            className="avatar-drop"
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const file = e.dataTransfer.files?.[0];
+                              handleAvatarFile(file, true);
+                            }}
+                          >
+                            Drop image here or
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleAvatarFile(e.target.files?.[0], true)}
+                              style={{ display: 'block', margin: '6px auto 0' }}
+                            />
+                          </div>
+                        )}
                         <label>Reply</label>
                         <textarea
                           value={replyMessage}
@@ -515,7 +659,12 @@ export default function Home() {
                       <div className="replies">
                         {repliesByParent[c.id].map(r => (
                           <div key={r.id || r.created_at} className="reply">
-                            <span className="author">{renderWithEmojis(r.name)}</span>
+                            <span className="author">
+                              {r.avatar_url && (
+                                <img className="avatar-preview" src={r.avatar_url} alt="avatar" />
+                              )}
+                              {renderWithEmojis(r.name)}
+                            </span>
                             <p className="text">{renderWithEmojis(r.message)}</p>
                             <span className="time">{getTimeAgo(r.created_at)}</span>
                           </div>

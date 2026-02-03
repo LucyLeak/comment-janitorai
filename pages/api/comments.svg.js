@@ -164,7 +164,7 @@ export default async function handler(req, res) {
   const lineHeight = 13;
   const emojiSize = 12;
   const maxComments = 4;
-  const backgroundUrl = 'https://f.feridinha.com/M1mBo.png';
+  const backgroundUrl = 'public/background.png';
 
   const parentComments = comments.filter(c => !c.parent_id);
   const totalComments = parentComments.length;
