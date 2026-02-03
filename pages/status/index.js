@@ -393,12 +393,28 @@ export default function StatusPage() {
           font-size: 12px;
           color: #4a4a4a;
         }
+        .MenuBox {
+          border: 1px solid #5e5e5e;
+          background: #f2f2f2;
+          padding: 8px;
+        }
+        .about-photo {
+          width: 100%;
+          height: auto;
+          border: 1px solid #5e5e5e;
+          background: #fff;
+          margin-bottom: 8px;
+          display: block;
+        }
       `}</style>
       <div className="header" />
       <div className="container">
         <aside id="Left-column">
-          <div className="panel-title">about me</div>
-          <div>heey! i'm lucy, this is my status page</div>
+          <img className="about-photo" src="/pfpp.jpg" alt="lucy" />
+          <div className="MenuBox">
+            <div className="panel-title">about me</div>
+            <div>heey! i'm lucy, this is my status page</div>
+          </div>
         </aside>
         <main id="holder">
           <h1>status</h1>

@@ -177,16 +177,16 @@ export default async function handler(req, res) {
 
   const emojiMap = getEmojiMap();
 
-  const width = 228;
-  const height = 266;
-  const padding = 10;
+  const width = 392;
+  const height = 76;
+  const padding = 8;
   const nameSize = 12;
   const msgSize = 11;
   const lineHeight = 14;
   const emojiSize = 12;
   const avatarSize = 20;
   const avatarGap = 6;
-  const backgroundUrl = getBase64PublicImage('background.png');
+  const backgroundUrl = '';
 
   const status = statusList[0];
   const renderedLines = [];
@@ -200,18 +200,14 @@ export default async function handler(req, res) {
     const textStartX = hasAvatar ? padding + avatarSize + avatarGap : padding;
     const maxTextWidth = width - (padding * 2) - (hasAvatar ? (avatarSize + avatarGap) : 0);
     const wrapped = wrapTokens(messageTokens, maxTextWidth, msgSize, emojiSize);
-    const blockHeight = (lineHeight * (wrapped.length + 1)) + 12;
     const blockTop = padding;
-
-    renderedLines.push(`<rect x="${padding - 4}" y="${blockTop}" width="${width - (padding * 2) + 8}" height="${blockHeight}" rx="3" fill="#383838" opacity="0.9" />`);
-
     if (hasAvatar) {
       renderedLines.push(
         `<image href="${status.avatar_url}" x="${padding}" y="${blockTop + 6}" width="${avatarSize}" height="${avatarSize}" />`
       );
     }
 
-    const nameY = blockTop + 16;
+    const nameY = blockTop + 14;
     renderedLines.push(`<text x="${textStartX}" y="${nameY}" class="name" style="font-size:${nameSize}px;">${name}</text>`);
     renderedLines.push(`<text x="${width - padding}" y="${nameY}" class="date" style="font-size:9px;" text-anchor="end">${timeAgo}</text>`);
 
@@ -227,14 +223,11 @@ export default async function handler(req, res) {
 
   const svg = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  ${backgroundUrl ? `<image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" />` : ''}
-  <rect x="0" y="0" width="${width}" height="${height}" fill="rgba(0,0,0,0.45)" />
-  <rect x="1" y="1" width="${width - 2}" height="${height - 2}" fill="rgba(20,20,20,0.75)" stroke="#5e5e5e" />
   <style>
     <![CDATA[
-    .name { font-family: "MS UI Gothic", sans-serif; fill: #e0e0e0; font-weight: bold; }
-    .date { font-family: monospace; fill: #9aa0a6; }
-    .msg { font-family: "MS UI Gothic", sans-serif; fill: #d5d5d5; }
+    .name { font-family: "MS UI Gothic", sans-serif; fill: #000000; font-weight: bold; }
+    .date { font-family: monospace; fill: #000000; }
+    .msg { font-family: "MS UI Gothic", sans-serif; fill: #000000; }
     ]]>
   </style>
   ${renderedLines.join('\n')}
