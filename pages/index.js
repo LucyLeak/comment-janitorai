@@ -25,8 +25,20 @@ export default function Home() {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [charCount, setCharCount] = useState(0);
+  const [emojiMap, setEmojiMap] = useState({});
+  const [replyTo, setReplyTo] = useState(null);
+  const [replyName, setReplyName] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [replyCharCount, setReplyCharCount] = useState(0);
   const textareaRef = useRef(null);
+  const replyTextareaRef = useRef(null);
   const MAX_CHARS = 100;
+
+  const refreshComments = async () => {
+    const res = await fetch('/api/comments.json');
+    const data = await res.json();
+    setComments(data.comments || []);
+  };
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -36,10 +48,27 @@ export default function Home() {
   }, [message]);
 
   useEffect(() => {
-    fetch('/api/comments.json')
+    if (replyTextareaRef.current) {
+      replyTextareaRef.current.style.height = 'auto';
+      replyTextareaRef.current.style.height = `${replyTextareaRef.current.scrollHeight}px`;
+    }
+  }, [replyMessage, replyTo]);
+
+  useEffect(() => {
+    refreshComments().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/emojis')
       .then(res => res.json())
-      .then(data => setComments(data.comments || []))
-      .catch(console.error);
+      .then(data => {
+        const map = {};
+        (data.emojis || []).forEach(e => {
+          map[e.name] = e.url;
+        });
+        setEmojiMap(map);
+      })
+      .catch(() => setEmojiMap({}));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -51,16 +80,81 @@ export default function Home() {
     await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: trimmedName, message: trimmedMessage }),
+      body: JSON.stringify({ name: trimmedName, message: trimmedMessage, parent_id: null }),
     });
 
-    const res = await fetch('/api/comments.json');
-    const data = await res.json();
-    setComments(data.comments || []);
+    await refreshComments();
     setName('');
     setMessage('');
     setCharCount(0);
   };
+
+  const handleReplySubmit = async (e, parentId) => {
+    e.preventDefault();
+    const trimmedName = replyName.trim().slice(0, 30);
+    const trimmedMessage = replyMessage.trim().slice(0, MAX_CHARS);
+    if (!trimmedName || !trimmedMessage) return;
+
+    await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmedName, message: trimmedMessage, parent_id: parentId }),
+    });
+
+    await refreshComments();
+    setReplyTo(null);
+    setReplyName('');
+    setReplyMessage('');
+    setReplyCharCount(0);
+  };
+
+  const renderWithEmojis = (text) => {
+    const parts = [];
+    const regex = /:([a-zA-Z0-9_+\-]+):/g;
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      const emojiName = match[1];
+      const emojiUrl = emojiMap[emojiName];
+      if (emojiUrl) {
+        parts.push(
+          <img
+            key={`emoji-${emojiName}-${key++}`}
+            src={emojiUrl}
+            alt={emojiName}
+            style={{ width: 16, height: 16, verticalAlign: 'middle', margin: '0 2px' }}
+          />
+        );
+      } else {
+        parts.push(match[0]);
+      }
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts;
+  };
+
+  const parentComments = comments.filter(c => !c.parent_id);
+  const repliesByParent = comments
+    .filter(c => c.parent_id)
+    .reduce((acc, reply) => {
+      acc[reply.parent_id] = acc[reply.parent_id] || [];
+      acc[reply.parent_id].push(reply);
+      return acc;
+    }, {});
+
+  Object.values(repliesByParent).forEach(list => {
+    list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  });
 
   return (
     <div id="MainCore" className="crt">
@@ -122,7 +216,6 @@ export default function Home() {
           display: flex;
           justify-content: center;
           align-items: flex-start;
-          gap: 10px;
           margin: 0 auto;
           padding: 170px 10px 40px;
           min-height: 100vh;
@@ -142,31 +235,6 @@ export default function Home() {
           border: 1px solid var(--border);
           background-image: url(https://kaththingy.neocities.org/ImgStorage/background.jpg);
           background-position: 50%;
-        }
-        #Left-column {
-          margin: 3px;
-          width: 180px;
-          padding: 10px;
-          background-image: url(https://kaththingy.neocities.org/ImgStorage/halftone_1768490195.png);
-          background-size: 150px;
-          background-color: var(--panel);
-          border: 1px solid var(--border);
-          font-size: 14px;
-          line-height: 1.4;
-          word-break: break-word;
-        }
-        .MenuBox {
-          border: 1px solid #5e5e5e;
-          background: var(--panel-lite);
-          margin-top: -6px;
-          padding: 6px;
-        }
-        #Left-column .styled-link {
-          display: block;
-          padding: 4px 0 4px 4px;
-          color: #000;
-          background-color: var(--panel-lite);
-          text-decoration: none;
         }
         #holder {
           margin: 5px;
@@ -257,23 +325,30 @@ export default function Home() {
           color: #4a4a4a;
           margin: 8px 0 0;
         }
+        .reply-button {
+          margin-top: 6px;
+          font-size: 12px;
+          padding: 2px 10px;
+        }
+        .replies {
+          margin-top: 8px;
+          margin-left: 14px;
+          border-left: 1px dotted #666;
+          padding-left: 8px;
+        }
+        .reply {
+          border: 1px solid var(--grid);
+          padding: 6px;
+          margin-bottom: 6px;
+          background: #f0f0f0;
+        }
         @media (max-width: 900px) {
-          .container { flex-direction: column; align-items: center; padding-top: 190px; }
-          #Left-column { width: 95%; max-width: 520px; }
-          #holder { width: 95%; }
+          .container { padding-top: 190px; }
           .header { height: 120px; }
         }
       `}</style>
       <div className="header" />
       <div className="container">
-        <aside id="Left-column">
-          <div className="MenuBox">
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>main</div>
-            <a className="styled-link" href="https://kaththingy.neocities.org/about" target="_blank">about</a>
-            <a className="styled-link" href="https://kaththingy.neocities.org/comments" target="_blank">comments</a>
-            <a className="styled-link" href="https://janitorai.com/profiles/9e8fb842-fd61-48b4-91cd-c9ff573a4274_profile-of-lucyleak" target="_blank">janitorai</a>
-          </div>
-        </aside>
         <main id="holder">
           <h1>comments</h1>
           <hr />
@@ -306,11 +381,11 @@ export default function Home() {
           <section>
             <div className="panel-title">Comments</div>
             <ul id="comments-list">
-              {comments.length === 0
+              {parentComments.length === 0
                 ? <p className="empty-note">Be the first to comment!</p>
-                : comments.map(c => (
+                : parentComments.map(c => (
                   <li key={c.id || c.created_at} className="comment">
-                    <span className="author">{c.name}
+                    <span className="author">{renderWithEmojis(c.name)}
                       {c.liked_by_owner && (
                         <img src="/likedC.png" alt="Liked" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle' }} />
                       )}
@@ -318,8 +393,52 @@ export default function Home() {
                         <img src="/pinned.png" alt="Pinned" style={{ width: 18, height: 18, marginLeft: 8, verticalAlign: 'middle', float: 'right' }} />
                       )}
                     </span>
-                    <p className="text">{c.message}</p>
+                    <p className="text">{renderWithEmojis(c.message)}</p>
                     <span className="time">{getTimeAgo(c.created_at)}</span>
+                    <div>
+                      <button
+                        type="button"
+                        className="reply-button"
+                        onClick={() => {
+                          setReplyTo(c.id);
+                          setReplyName('');
+                          setReplyMessage('');
+                          setReplyCharCount(0);
+                        }}
+                      >
+                        Reply
+                      </button>
+                    </div>
+                    {replyTo === c.id && (
+                      <form onSubmit={(e) => handleReplySubmit(e, c.id)} autoComplete="off" style={{ marginTop: 8 }}>
+                        <label>Your Name</label>
+                        <input
+                          type="text" value={replyName}
+                          onChange={e => setReplyName(e.target.value)}
+                          maxLength={30} required />
+                        <label>Reply</label>
+                        <textarea
+                          ref={replyTextareaRef}
+                          value={replyMessage}
+                          onChange={e => { setReplyMessage(e.target.value); setReplyCharCount(e.target.value.length); }}
+                          maxLength={MAX_CHARS}
+                          rows={2}
+                          required />
+                        <div className="char-count">{replyCharCount}/{MAX_CHARS}</div>
+                        <button type="submit">Post Reply</button>
+                      </form>
+                    )}
+                    {repliesByParent[c.id] && (
+                      <div className="replies">
+                        {repliesByParent[c.id].map(r => (
+                          <div key={r.id || r.created_at} className="reply">
+                            <span className="author">{renderWithEmojis(r.name)}</span>
+                            <p className="text">{renderWithEmojis(r.message)}</p>
+                            <span className="time">{getTimeAgo(r.created_at)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </li>
                 ))
               }

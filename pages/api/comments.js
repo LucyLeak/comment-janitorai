@@ -1,4 +1,4 @@
-// pages/api/comments.js
+﻿// pages/api/comments.js
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -7,16 +7,15 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // GET  → retorna lista de comentários
   if (req.method === 'GET') {
     try {
       const { data, error } = await supabase
         .from('comments')
-        .select('id, name, message, created_at')
+        .select('id, name, message, created_at, liked_by_owner, pinned, parent_id')
+        .order('pinned', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
-      // Para compatibilidade com seu front, retornamos { comments: [...] }
       return res.status(200).json({ comments: data });
     } catch (error) {
       console.error('GET /api/comments error:', error);
@@ -24,16 +23,15 @@ export default async function handler(req, res) {
     }
   }
 
-  // POST → insere um novo comentário
   if (req.method === 'POST') {
     try {
-      const { name, message } = req.body;
+      const { name, message, parent_id = null } = req.body;
       if (!name || !message) {
         return res.status(400).json({ error: 'Name and message are required.' });
       }
       const { error } = await supabase
         .from('comments')
-        .insert([{ name, message }]);
+        .insert([{ name, message, parent_id }]);
       if (error) throw error;
       return res.status(200).json({ ok: true });
     } catch (error) {
@@ -42,7 +40,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Outros métodos não permitidos
   res.setHeader('Allow', ['GET', 'POST']);
   res.status(405).end(`Method ${req.method} Not Allowed`);
 }

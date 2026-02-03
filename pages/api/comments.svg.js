@@ -1,4 +1,4 @@
-import { getComments } from '../../lib/db';
+﻿import { getComments } from '../../lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -28,45 +28,122 @@ function formatTimeAgo(dateString) {
   return 'now';
 }
 
-// Aproxima a largura do texto (super compatível com Vercel)
-function approximateTextWidth(text, fontSize = 14) {
+function approximateTextWidth(text, fontSize = 12) {
   const wideCharRegex = /[^\u0000-\u00ff]/g;
   const wideChars = (text.match(wideCharRegex) || []).length;
   const narrowChars = text.length - wideChars;
-
   return (wideChars * fontSize) + (narrowChars * (fontSize * 0.6));
 }
 
-function wrapTextPixels(text, maxWidth, prefixWidth = 0, fontSize = 14) {
-  const words = text.split(' ');
-  const lines = [];
-  let currentLine = '';
-  let currentWidth = prefixWidth;
+const ALLOWED_EXTS = new Set(['.png', '.gif', '.jpg', '.jpeg', '.webp']);
 
-  words.forEach(word => {
-    const wordWidth = approximateTextWidth(word + ' ', fontSize);
-    if (currentWidth + wordWidth > maxWidth) {
-      lines.push(currentLine.trim());
-      currentLine = word + ' ';
-      currentWidth = approximateTextWidth(word + ' ', fontSize);
-    } else {
-      currentLine += word + ' ';
-      currentWidth += wordWidth;
+function getEmojiMap() {
+  try {
+    const dir = path.join(process.cwd(), 'public', 'emojis');
+    if (!fs.existsSync(dir)) return {};
+    const files = fs.readdirSync(dir);
+    const map = {};
+
+    files.forEach(file => {
+      const ext = path.extname(file).toLowerCase();
+      if (!ALLOWED_EXTS.has(ext)) return;
+      const name = path.basename(file, ext);
+      const filePath = path.join(dir, file);
+      const data = fs.readFileSync(filePath);
+      const mime = ext === '.jpg' ? 'image/jpeg' : `image/${ext.replace('.', '')}`;
+      map[name] = `data:${mime};base64,${data.toString('base64')}`;
+    });
+
+    return map;
+  } catch (err) {
+    return {};
+  }
+}
+
+function tokenizeWithEmojis(text, emojiMap) {
+  const tokens = [];
+  const regex = /:([a-zA-Z0-9_+\-]+):/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({ type: 'text', value: text.slice(lastIndex, match.index) });
     }
+    const name = match[1];
+    const emoji = emojiMap[name];
+    if (emoji) {
+      tokens.push({ type: 'emoji', name, value: emoji });
+    } else {
+      tokens.push({ type: 'text', value: match[0] });
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    tokens.push({ type: 'text', value: text.slice(lastIndex) });
+  }
+
+  return tokens;
+}
+
+function splitTextToken(token) {
+  return token.value.split(/(\s+)/).filter(Boolean).map(part => ({
+    type: 'text',
+    value: part,
+  }));
+}
+
+function wrapTokens(tokens, maxWidth, fontSize, emojiSize) {
+  const lines = [];
+  let currentLine = [];
+  let currentWidth = 0;
+
+  const pushLine = () => {
+    lines.push(currentLine);
+    currentLine = [];
+    currentWidth = 0;
+  };
+
+  tokens.forEach(token => {
+    const parts = token.type === 'text' ? splitTextToken(token) : [token];
+
+    parts.forEach(part => {
+      const partWidth = part.type === 'emoji'
+        ? emojiSize
+        : approximateTextWidth(part.value, fontSize);
+
+      if (currentWidth + partWidth > maxWidth && currentLine.length > 0) {
+        pushLine();
+      }
+      currentLine.push(part);
+      currentWidth += partWidth;
+    });
   });
 
-  if (currentLine) lines.push(currentLine.trim());
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
   return lines;
 }
 
-function getBase64Image(fileName) {
-  try {
-    const filePath = path.join(process.cwd(), 'public', fileName);
-    const data = fs.readFileSync(filePath);
-    return `data:image/png;base64,${data.toString('base64')}`;
-  } catch (err) {
-    return '';
-  }
+function renderLineTokens(tokens, x, y, fontSize, emojiSize) {
+  let output = '';
+  let cursorX = x;
+
+  tokens.forEach((token) => {
+    if (token.type === 'emoji') {
+      output += `<image href="${token.value}" x="${cursorX}" y="${y - emojiSize + 2}" width="${emojiSize}" height="${emojiSize}" />`;
+      cursorX += emojiSize;
+    } else {
+      const safe = escapeXML(token.value);
+      output += `<text x="${cursorX}" y="${y}" class="msg" style="font-size:${fontSize}px;">${safe}</text>`;
+      cursorX += approximateTextWidth(token.value, fontSize);
+    }
+  });
+
+  return output;
 }
 
 export default async function handler(req, res) {
@@ -77,117 +154,69 @@ export default async function handler(req, res) {
     console.error('ERROR in comments.svg:', err);
   }
 
-  // Limit to 20 comments, newest first
-  const maxComments = 14;
-  const totalComments = comments.length;
-  const limitedComments = comments.slice(0, maxComments);
+  const emojiMap = getEmojiMap();
 
-  const padding = 16;
-  const width = 330;
-  const lineHeight = 26; // Slightly larger comments
-  const verticalSpacing = 10;
-  const blockPadding = 12; // More space between name and comment
+  const width = 228;
+  const height = 266;
+  const padding = 10;
+  const nameSize = 11;
+  const msgSize = 10;
+  const lineHeight = 13;
+  const emojiSize = 12;
+  const maxComments = 4;
+  const backgroundUrl = 'https://f.feridinha.com/M1mBo.png';
 
-  let yOffset = padding;
+  const parentComments = comments.filter(c => !c.parent_id);
+  const totalComments = parentComments.length;
+  const limitedComments = parentComments.slice(0, maxComments);
+
+  let y = padding + nameSize + 4;
   const renderedLines = [];
 
-  const likedIcon = getBase64Image('likedC.png');
-  const pinnedIcon = getBase64Image('pinned.png');
-
-  limitedComments.forEach((comment, idx) => {
+  limitedComments.forEach((comment) => {
     const timeAgo = formatTimeAgo(comment.created_at);
     const name = escapeXML(comment.name);
-    const message = escapeXML(comment.message);
-    const nameWidth = approximateTextWidth(name, 14);
-    const dateWidth = approximateTextWidth(timeAgo, 12);
-    const iconSpacing = 24; // space for icons
-    const rowHeight = lineHeight;
-    const blockPadding = 8;
+    const messageTokens = tokenizeWithEmojis(comment.message || '', emojiMap);
 
-    // Prepare IDs for SVG elements
-    const blockId = `comment-block-${idx}`;
-    const pinnedBgId = `pinned-bg-${idx}`;
+    renderedLines.push(`<text x="${padding}" y="${y}" class="name" style="font-size:${nameSize}px;">${name}</text>`);
+    renderedLines.push(`<text x="${width - padding}" y="${y}" class="date" style="font-size:9px;" text-anchor="end">${timeAgo}</text>`);
 
-    // Wrap message text
-    const wrapped = wrapTextPixels(message, width - 2 * padding, 0);
+    y += lineHeight;
 
-    // Calculate block height
-    const blockHeight = rowHeight + wrapped.length * lineHeight + blockPadding * 2;
+    const maxTextWidth = width - (padding * 2);
+    const wrapped = wrapTokens(messageTokens, maxTextWidth, msgSize, emojiSize);
 
-    // Gradient background for pinned
-    if (comment.pinned) {
-      renderedLines.push(`
-        <defs>
-          <linearGradient id="${pinnedBgId}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
-            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <rect x="${padding}" y="${yOffset}" width="${width - 2 * padding}" height="${rowHeight}" rx="0" fill="url(#${pinnedBgId})"/>
-      `);
-    }
+    wrapped.forEach((lineTokens) => {
+      if (y > height - padding) return;
+      renderedLines.push(renderLineTokens(lineTokens, padding, y, msgSize, emojiSize));
+      y += lineHeight;
+    });
 
-    // Start comment block group
-    renderedLines.push(`<g id="${blockId}" class="comment-block">`);
-
-    // Name row (name, date)
-    renderedLines.push(`<text x="${padding}" y="${yOffset + lineHeight - 8}" class="comment-name-row" style="font-size:16px;">
-      <tspan class="name" style="font-size:18px;">${name}</tspan>
-      <tspan class="date" dx="8" style="font-size:15px;">${timeAgo}</tspan>
-    </text>`);
-
-    // Icons (pinned and liked) in the top-right corner
-    const iconSize = 18;
-    let iconX = width - padding - iconSize;
-    const iconY = yOffset + 4;
-    if (comment.pinned && pinnedIcon) {
-      renderedLines.push(`<image href="${pinnedIcon}" x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" class="pinned-icon"/>`);
-      iconX -= iconSize + 6; // 6px gap between icons
-    }
-    if (comment.liked_by_owner && likedIcon) {
-      renderedLines.push(`<image href="${likedIcon}" x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" class="liked-icon"/>`);
-    }
-
-    // Message block with extra padding below the name
-    const nameBottomPadding = 8; // Adjust this value for more/less space
-    for (let i = 0; i < wrapped.length; i++) {
-      renderedLines.push(
-        `<text x="${padding}" y="${yOffset + lineHeight + blockPadding + nameBottomPadding + i * lineHeight}" class="comment-message" style="font-size:16px;">
-          <tspan class="msg" style="font-size:16px;">${wrapped[i]}</tspan>
-        </text>`
-      );
-    }
-
-    // End comment block group
-    renderedLines.push(`</g>`);
-
-    yOffset += blockHeight + 4; // Reduced verticalSpacing for less distance between comments
+    y += 4;
   });
 
-  const height = yOffset;
-
-  // Add 'and more' text if there are more comments
-  if (totalComments > maxComments) {
-    renderedLines.push(`
-      <text x="${padding}" y="${height - 8}" class="more-comments" style="font-size:12px;fill:#94a3b8;font-family:monospace;">
-        and more ${totalComments - maxComments} comments
-      </text>
-    `);
+  if (totalComments > maxComments && y < height - 6) {
+    renderedLines.push(
+      `<text x="${padding}" y="${height - 6}" class="more" style="font-size:9px;">and more ${totalComments - maxComments} comments</text>`
+    );
   }
 
   const svg = `<?xml version="1.0"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" style="background: transparent">
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+  <defs>
+    <filter id="bgBlur" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" />
+    </filter>
+  </defs>
+  <image href="${backgroundUrl}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" />
+  <rect x="0" y="0" width="${width}" height="${height}" fill="rgba(0,0,0,0.45)" />
+  <rect x="1" y="1" width="${width - 2}" height="${height - 2}" fill="rgba(20,20,20,0.75)" stroke="#5e5e5e" />
   <style>
     <![CDATA[
-    .comment-block { }
-    .comment-name-row { font-family: 'Open Sans', sans-serif; font-size: 16px; fill: #e2e2e2; }
-    .name { font-family: monospace; fill: #ffe033; font-weight: bold; font-size: 18px; }
-    .date { fill: #94a3b8; font-size: 15px; font-family: monospace; }
-    .msg { fill: #cbd5e1; font-size: 16px; }
-    .liked-icon { }
-    .pinned-icon { }
-    .custom-pinned-icon { }
-    .comment-message { font-family: 'Open Sans', sans-serif; font-size: 16px; fill: #cbd5e1; }
+    .name { font-family: "MS UI Gothic", sans-serif; fill: #e0e0e0; font-weight: bold; }
+    .date { font-family: monospace; fill: #9aa0a6; }
+    .msg { font-family: "MS UI Gothic", sans-serif; fill: #d5d5d5; }
+    .more { font-family: monospace; fill: #b0b0b0; }
     ]]>
   </style>
   ${renderedLines.join('\n')}
