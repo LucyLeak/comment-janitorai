@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect } from 'react';
 
 const getTimeAgo = (timestamp) => {
   if (!timestamp) return '';
@@ -26,12 +26,13 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [emojiMap, setEmojiMap] = useState({});
+  const [emojiList, setEmojiList] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showReplyEmojiPicker, setShowReplyEmojiPicker] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [replyName, setReplyName] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
   const [replyCharCount, setReplyCharCount] = useState(0);
-  const textareaRef = useRef(null);
-  const replyTextareaRef = useRef(null);
   const MAX_CHARS = 100;
 
   const refreshComments = async () => {
@@ -39,20 +40,6 @@ export default function Home() {
     const data = await res.json();
     setComments(data.comments || []);
   };
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [message]);
-
-  useEffect(() => {
-    if (replyTextareaRef.current) {
-      replyTextareaRef.current.style.height = 'auto';
-      replyTextareaRef.current.style.height = `${replyTextareaRef.current.scrollHeight}px`;
-    }
-  }, [replyMessage, replyTo]);
 
   useEffect(() => {
     refreshComments().catch(console.error);
@@ -67,8 +54,12 @@ export default function Home() {
           map[e.name] = e.url;
         });
         setEmojiMap(map);
+        setEmojiList(data.emojis || []);
       })
-      .catch(() => setEmojiMap({}));
+      .catch(() => {
+        setEmojiMap({});
+        setEmojiList([]);
+      });
   }, []);
 
   const handleSubmit = async (e) => {
@@ -87,6 +78,7 @@ export default function Home() {
     setName('');
     setMessage('');
     setCharCount(0);
+    setShowEmojiPicker(false);
   };
 
   const handleReplySubmit = async (e, parentId) => {
@@ -106,6 +98,15 @@ export default function Home() {
     setReplyName('');
     setReplyMessage('');
     setReplyCharCount(0);
+    setShowReplyEmojiPicker(false);
+  };
+
+  const insertEmoji = (emojiName) => {
+    setMessage(current => `:${emojiName}: ${current}`.trimStart());
+  };
+
+  const insertReplyEmoji = (emojiName) => {
+    setReplyMessage(current => `:${emojiName}: ${current}`.trimStart());
   };
 
   const renderWithEmojis = (text) => {
@@ -275,6 +276,11 @@ export default function Home() {
           font-size: 14px;
           outline: none;
         }
+        textarea {
+          resize: none;
+          max-height: 160px;
+          overflow-y: auto;
+        }
         input:focus, textarea:focus {
           border-color: #000;
           background: #f7f7f7;
@@ -342,6 +348,38 @@ export default function Home() {
           margin-bottom: 6px;
           background: #f0f0f0;
         }
+        .emoji-toggle {
+          margin-bottom: 8px;
+          font-size: 12px;
+          padding: 2px 10px;
+        }
+        .emoji-panel {
+          border: 1px solid #5e5e5e;
+          background: #f7f7f7;
+          padding: 6px;
+          margin-bottom: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          max-height: 140px;
+          overflow-y: auto;
+        }
+        .emoji-item {
+          width: 22px;
+          height: 22px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid #9a9a9a;
+          background: #fff;
+          padding: 0;
+          cursor: pointer;
+        }
+        .emoji-item img {
+          width: 16px;
+          height: 16px;
+          display: block;
+        }
         @media (max-width: 900px) {
           .container { padding-top: 190px; }
           .header { height: 120px; }
@@ -367,13 +405,35 @@ export default function Home() {
                 maxLength={30} required />
               <label>Comment</label>
               <textarea
-                ref={textareaRef}
                 value={message}
                 onChange={e => { setMessage(e.target.value); setCharCount(e.target.value.length); }}
                 maxLength={MAX_CHARS}
                 rows={3}
                 required />
               <div className="char-count">{charCount}/{MAX_CHARS}</div>
+              <button
+                type="button"
+                className="emoji-toggle"
+                onClick={() => setShowEmojiPicker(current => !current)}
+                disabled={emojiList.length === 0}
+              >
+                {emojiList.length === 0 ? 'No emojis found' : 'Emojis'}
+              </button>
+              {showEmojiPicker && (
+                <div className="emoji-panel">
+                  {emojiList.map(emoji => (
+                    <button
+                      key={emoji.name}
+                      type="button"
+                      className="emoji-item"
+                      title={`:${emoji.name}:`}
+                      onClick={() => insertEmoji(emoji.name)}
+                    >
+                      <img src={emoji.url} alt={emoji.name} />
+                    </button>
+                  ))}
+                </div>
+              )}
               <button type="submit">Post Comment</button>
             </form>
           </section>
@@ -404,6 +464,7 @@ export default function Home() {
                           setReplyName('');
                           setReplyMessage('');
                           setReplyCharCount(0);
+                          setShowReplyEmojiPicker(false);
                         }}
                       >
                         Reply
@@ -418,13 +479,35 @@ export default function Home() {
                           maxLength={30} required />
                         <label>Reply</label>
                         <textarea
-                          ref={replyTextareaRef}
                           value={replyMessage}
                           onChange={e => { setReplyMessage(e.target.value); setReplyCharCount(e.target.value.length); }}
                           maxLength={MAX_CHARS}
                           rows={2}
                           required />
                         <div className="char-count">{replyCharCount}/{MAX_CHARS}</div>
+                        <button
+                          type="button"
+                          className="emoji-toggle"
+                          onClick={() => setShowReplyEmojiPicker(current => !current)}
+                          disabled={emojiList.length === 0}
+                        >
+                          {emojiList.length === 0 ? 'No emojis found' : 'Emojis'}
+                        </button>
+                        {showReplyEmojiPicker && (
+                          <div className="emoji-panel">
+                            {emojiList.map(emoji => (
+                              <button
+                                key={`reply-${emoji.name}`}
+                                type="button"
+                                className="emoji-item"
+                                title={`:${emoji.name}:`}
+                                onClick={() => insertReplyEmoji(emoji.name)}
+                              >
+                                <img src={emoji.url} alt={emoji.name} />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         <button type="submit">Post Reply</button>
                       </form>
                     )}
