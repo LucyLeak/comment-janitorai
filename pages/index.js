@@ -1,4 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
+import { ReactionBar, useReactions } from '../components/Reactions';
+import { loadProfile, saveProfile, clearProfile } from '../lib/visitor';
 
 const getTimeAgo = (timestamp) => {
   if (!timestamp) return '';
@@ -69,6 +71,7 @@ export default function Home() {
   const [replyCharCount, setReplyCharCount] = useState(0);
   const [replyAvatarDataUrl, setReplyAvatarDataUrl] = useState('');
   const [showReplyAvatarUploader, setShowReplyAvatarUploader] = useState(false);
+  const [hasSavedProfile, setHasSavedProfile] = useState(false);
   const MAX_CHARS = 100;
   const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
   const MAX_AVATAR_MB = 5;
@@ -82,6 +85,26 @@ export default function Home() {
   useEffect(() => {
     refreshComments().catch(console.error);
   }, []);
+
+  // Emote reactions for every comment and reply on the page.
+  const commentIds = comments.map(c => c.id).filter(Boolean);
+  const { byTarget: reactionsByComment, update: updateCommentReactions } = useReactions('comment', commentIds);
+
+  // Fill in the name and avatar this browser used last time.
+  useEffect(() => {
+    const saved = loadProfile();
+    if (saved.name) setName(saved.name);
+    if (saved.avatar) setAvatarDataUrl(saved.avatar);
+    setHasSavedProfile(Boolean(saved.name || saved.avatar));
+  }, []);
+
+  const forgetProfile = () => {
+    clearProfile();
+    setName('');
+    setAvatarDataUrl('');
+    setShowAvatarUploader(false);
+    setHasSavedProfile(false);
+  };
 
   useEffect(() => {
     fetch('/api/emojis')
@@ -124,11 +147,11 @@ export default function Home() {
     }
 
     await refreshComments();
-    setName('');
+    saveProfile(trimmedName, avatarDataUrl);
+    setHasSavedProfile(true);
     setMessage('');
     setCharCount(0);
     setShowEmojiPicker(false);
-    setAvatarDataUrl('');
     setShowAvatarUploader(false);
   };
 
@@ -156,6 +179,8 @@ export default function Home() {
     }
 
     await refreshComments();
+    saveProfile(trimmedName, replyAvatarDataUrl);
+    setHasSavedProfile(true);
     setReplyTo(null);
     setReplyName('');
     setReplyMessage('');
@@ -557,6 +582,16 @@ export default function Home() {
                   {avatarDataUrl && (
                     <img className="avatar-preview" src={avatarDataUrl} alt="avatar" />
                   )}
+                  {hasSavedProfile && (
+                    <button
+                      type="button"
+                      className="avatar-button"
+                      onClick={forgetProfile}
+                      title="Remove the name and avatar saved in this browser"
+                    >
+                      Forget my info
+                    </button>
+                  )}
                 </div>
               </div>
               {showAvatarUploader && (
@@ -636,17 +671,28 @@ export default function Home() {
                     </span>
                     <p className="text">{renderWithEmojis(c.message)}</p>
                     <span className="time">{getTimeAgo(c.created_at)}</span>
+                    {c.id && (
+                      <ReactionBar
+                        targetType="comment"
+                        targetId={c.id}
+                        reactions={reactionsByComment[c.id] || []}
+                        emojiMap={emojiMap}
+                        emojiList={emojiList}
+                        onChange={(list) => updateCommentReactions(c.id, list)}
+                      />
+                    )}
                     <div>
                       <button
                         type="button"
                         className="reply-button"
                         onClick={() => {
+                          const saved = loadProfile();
                           setReplyTo(c.id);
-                          setReplyName('');
+                          setReplyName(saved.name);
                           setReplyMessage('');
                           setReplyCharCount(0);
                           setShowReplyEmojiPicker(false);
-                          setReplyAvatarDataUrl('');
+                          setReplyAvatarDataUrl(saved.avatar);
                           setShowReplyAvatarUploader(false);
                         }}
                       >
@@ -743,6 +789,16 @@ export default function Home() {
                             </span>
                             <p className="text">{renderWithEmojis(r.message)}</p>
                             <span className="time">{getTimeAgo(r.created_at)}</span>
+                            {r.id && (
+                              <ReactionBar
+                                targetType="comment"
+                                targetId={r.id}
+                                reactions={reactionsByComment[r.id] || []}
+                                emojiMap={emojiMap}
+                                emojiList={emojiList}
+                                onChange={(list) => updateCommentReactions(r.id, list)}
+                              />
+                            )}
                           </div>
                         ))}
                       </div>

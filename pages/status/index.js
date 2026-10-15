@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { ReactionBar, useReactions } from '../../components/Reactions';
 
 const getTimeAgo = (timestamp) => {
   if (!timestamp) return '';
@@ -81,6 +82,10 @@ export default function StatusPage() {
   useEffect(() => {
     refreshStatus().catch(console.error);
   }, []);
+
+  // Emote reactions on status posts: everyone can see them, only the logged-in owner can add them.
+  const statusIds = statusList.map(s => s.id).filter(Boolean);
+  const { byTarget: reactionsByStatus, update: updateStatusReactions } = useReactions('status', statusIds);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -677,6 +682,18 @@ export default function StatusPage() {
                   </div>
                   <div>{renderWithEmojis(s.message)}</div>
                   <div className="status-time">{getTimeAgo(s.created_at)}</div>
+                  {s.id && (
+                    <ReactionBar
+                      targetType="status"
+                      targetId={s.id}
+                      reactions={reactionsByStatus[s.id] || []}
+                      emojiMap={emojiMap}
+                      emojiList={emojiList}
+                      canReact={isAuthed}
+                      lockedMessage="Log in to react to status posts."
+                      onChange={(list) => updateStatusReactions(s.id, list)}
+                    />
+                  )}
                 </div>
               ))
             )}
