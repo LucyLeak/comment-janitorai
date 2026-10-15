@@ -1,125 +1,214 @@
-# Sistema de Comentários com Imagem SVG Dinâmica
+# Comentários, Status e Imagens SVG para o perfil no Janitor AI
 
-Este é um projeto Next.js que implementa um sistema de comentários com uma interface de terminal retro. A principal característica é a geração de uma imagem SVG dinâmica com os comentários mais recentes, ideal para ser incorporada em perfis do Janitor ou outros sites.
+> **Toda a documentação do projeto**
+>
+> | Arquivo | Sobre o quê |
+> |---|---|
+> | [README.md](README.md) | Este arquivo: o que é o site e como instalar, passo a passo |
+> | [README.db.md](README.db.md) | O banco de dados (Supabase) e o arquivo `lib/db.js` |
+> | [README.api.md](README.api.md) | A API do site, na pasta `pages/api/` |
+> | [README.frontend.md](README.frontend.md) | A página de comentários |
+> | [README.svg.md](README.svg.md) | Como a imagem SVG é gerada |
+>
+> Ir direto para: [Passo a passo](#passo-a-passo) · [No dia a dia](#no-dia-a-dia) · [Problemas comuns](#problemas-comuns)
 
-![Exemplo de SVG](https://files.catbox.moe/uhd58m.png)
+Um site simples inspirado no [status.cafe](https://status.cafe) onde as pessoas deixam **comentários** (com nome, foto e reações de emotes) e onde você publica um status só seu.
 
-## Funcionalidades
+O site também gera imagens que se atualizam sozinhas (infelizmente por limitação do janitor AI, é preciso atualizar a página) com os últimos comentários e com o seu status. Você coloca essas imagens no seu perfil do Janitor AI (ou em qualquer lugar que aceite imagem) e elas mostram sempre a versão mais nova.
 
--   **Interface de Terminal:** Uma página de comentários com visual retrô que imita um terminal de computador.
--   **Envio de Comentários:** Formulário para os usuários deixarem nome e mensagem.
--   **SVG Dinâmico:** Um endpoint de API (`/api/comments.svg`) que gera uma imagem SVG com os comentários mais recentes.
--   **Moderação Simples:** Endpoints para "curtir" (`/api/comments/[id]/like`) e "fixar" (`/api/comments/[id]/pin`) comentários.
--   **Backend com Supabase:** Utiliza o Supabase para armazenamento de dados, facilitando a configuração.
+![Exemplo de SVG](https://files.catbox.moe/mnuf79.png)
 
-## Como Funciona
+## O que ele faz
 
-O projeto é dividido em três partes principais:
+- **Comentários anônimos** Qualquer pessoa comenta e responde, sem criar conta.
+- **Reações com emotes** Cada pessoa pode colocar até 5 emotes diferentes em cada comentário. Clicar de novo no emote tira a reação. É tudo anônimo: ninguém vê quem reagiu.
+- **Informações salvas por um id gerado aleatóriamente baseado no seu navegador** O nome e a foto de perfil ficam salvos no navegador da pessoa, então ela não precisa preencher tudo de novo. O botão "Forget my info" apaga esses dados.
+- **Página de status só sua.** Todo mundo vê, mas só você publica (com senha). Só você também pode reagir aos status.
+- **Curtir e fixar comentários. (Deprecated)** Você fixa um comentário (ele vai para o topo) ou dá um coraçãozinho nele, direto pelo Supabase.
 
-1.  **Frontend (`pages/index.js`):** Uma página React que busca e exibe os comentários do [banco de dados](README.db.md). Ela também contém o formulário para que os usuários possam postar novos comentários.
-2.  **API do Next.js (`pages/api/`):**
-    -   `comments.js`: Lida com a criação (`POST`) e listagem (`GET`) de comentários.
-    -   `comments.json.js`: Fornece os comentários em formato JSON para o frontend.
-    -   `comments.svg.js`: O coração do projeto. Este endpoint busca os comentários mais recentes no Supabase, formata o texto, adiciona ícones e renderiza tudo em uma imagem SVG.
-    -   `comments/[id]/like.js` e `comments/[id]/pin.js`: Endpoints para moderar comentários específicos.
-3.  **Banco de Dados (`lib/db.js`):** Uma camada de abstração que centraliza todas as interações com o Supabase, como buscar, salvar, curtir e fixar comentários.
+## Como funciona, em 3 linhas
 
-## Tutorial: Como Configurar e Usar
+1. O site é feito com [Next.js](https://nextjs.org) e fica hospedado na [Vercel](https://vercel.com).
+2. Os comentários, os status e as reações ficam guardados no [Supabase](https://supabase.com), um banco de dados gratuito.
+3. Visitantes não têm login. Só você tem uma senha, para a página de status.
 
-Siga os passos abaixo para ter sua própria versão deste projeto no ar.
+## O que você precisa
 
-### 1. Pré-requisitos
+- [Node.js](https://nodejs.org/en/) versão 22 ou acima
+- Um repositório no [GitHub](https://github.com/), uma conta no [Supabase](https://supabase.com/) e uma na [Vercel](https://vercel.com/). O site é leve suficiente para rodar bem no plano gratuito
+- Um editor de código, como o [VS Code](https://code.visualstudio.com/) (no celular, use o Termux)
 
--   [Node.js](https://nodejs.org/en/) (versão 18 ou superior)
--   Uma conta no [GitHub](https://github.com/)
--   Uma conta no [Supabase](https://supabase.com/) (é gratuito)
+## Passo a passo
 
-### 2. Clone o Repositório
-
-Comece clonando este repositório para a sua máquina local.
+### 1. Baixe o projeto
 
 ```bash
-git clone https://github.com/lucyleak/comment-janitorai.git
+git clone https://github.com/LucyLeak/comment-janitorai.git
 cd comment-janitorai
-```
-
-### 3. Instale as Dependências
-
-Use o `npm` (ou seu gerenciador de pacotes preferido) para instalar as dependências do projeto.
-
-```bash
 npm install
 ```
 
-### 4. Configure o Supabase
+### 2. Crie o banco de dados (Supabase)
 
-O Supabase será nosso [banco de dados](README.db.md).
+1. Crie um projeto novo no [supabase.com](https://supabase.com).
+2. No menu lateral, abra SQL Editor e clique em New query.
+3. Cole o script abaixo e clique em Run. Ele cria as três tabelas principais do site: `comments`, `status` e `reactions`.
 
-1.  Vá para [supabase.com](https://supabase.com) e crie um novo projeto.
-2.  Após a criação, vá para **SQL Editor** no menu lateral.
-3.  Clique em **New query** e cole o seguinte script para criar a tabela `comments`.
+```sql
+create table if not exists public.comments (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null,
+  message text not null,
+  avatar_url text,
+  parent_id uuid references public.comments(id) on delete cascade, -- preenchido só nas respostas
+  liked_by_owner boolean not null default false,
+  pinned boolean not null default false
+);
 
-    ```sql
-    CREATE TABLE comments (
-      id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-      created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-      name TEXT,
-      message TEXT,
-      liked_by_owner BOOLEAN DEFAULT false,
-      pinned BOOLEAN DEFAULT false
-    );
-    ```
+create table if not exists public.status (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  name text not null,
+  message text not null,
+  avatar_url text
+);
 
-4.  Execute o script.
-5.  Agora, vá para **Project Settings** (ícone de engrenagem) > **API**. Guarde as seguintes informações:
-    -   **Project URL** (URL do Projeto)
-    -   **`service_role` Secret** (Chave secreta `service_role`)
+create table if not exists public.reactions (
+  id bigint generated always as identity primary key,
+  target_type text not null check (target_type in ('comment', 'status')),
+  target_id text not null,   -- o id do comentário ou do status
+  emoji text not null,       -- o nome do emote
+  voter_hash text not null,  -- código embaralhado do navegador (nunca é mostrado)
+  created_at timestamptz not null default now(),
+  unique (target_type, target_id, emoji, voter_hash)
+);
 
-### 5. Configure as Variáveis de Ambiente
+create index if not exists reactions_target_idx on public.reactions (target_type, target_id);
+create index if not exists reactions_created_idx on public.reactions (created_at);
 
-Crie um arquivo chamado `.env.local` na raiz do seu projeto e adicione as chaves que você copiou do Supabase.
+alter table public.comments enable row level security;
+alter table public.status enable row level security;
+alter table public.reactions enable row level security;
+```
+
+4. Pegue as duas informações que o site precisa. Vá em Project Settings e abra API. Salve o Project URL e a chave service_role.
+
+> Cuidado: a chave `service_role` dá acesso total ao seu banco de dados. Nunca poste essa chave, nunca deixe essa chave pública.
+
+### 3. Crie o arquivo de configurações
+
+Na pasta do projeto, crie um arquivo chamado `.env.local` com este conteúdo:
 
 ```
-# .env.local
-NEXT_PUBLIC_SUPABASE_URL=SUA_PROJECT_URL_AQUI
-SUPABASE_SERVICE_ROLE_KEY=SUA_CHAVE_SERVICE_ROLE_AQUI
+NEXT_PUBLIC_SUPABASE_URL=cole-aqui-o-project-url
+SUPABASE_SERVICE_ROLE_KEY=cole-aqui-a-chave-service-role
+STATUS_PASSWORD=a-senha-que-voce-vai-usar-para-entrar-no-status
+STATUS_AUTH_TOKEN=um-texto-longo-e-aleatorio
+REACTION_SALT=outro-texto-longo-e-aleatorio
 ```
 
-Substitua `SUA_PROJECT_URL_AQUI` e `SUA_CHAVE_SERVICE_ROLE_AQUI` pelos valores do seu projeto Supabase.
+| Configuração | Para que serve |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | O endereço do seu Supabase. |
+| `SUPABASE_SERVICE_ROLE_KEY` | A chave secreta do seu Supabase. |
+| `STATUS_PASSWORD` | A senha que você digita para entrar na página de status. |
+| `STATUS_AUTH_TOKEN` | Um código secreto que prova que você já entrou. Ninguém precisa decorar, então use um texto longo e aleatório. |
+| `REACTION_SALT` | Opcional. Embaralha ainda mais os códigos das reações anônimas. Escolha um valor e **não troque depois**, senão as reações antigas deixam de poder ser desfeitas. |
 
-### 6. Execute o Projeto Localmente
+Para gerar um texto longo e aleatório, rode isto no terminal e copie o resultado:
 
-Agora você pode iniciar o servidor de desenvolvimento.
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+O arquivo `.env.local` já é ignorado pelo Git, ele não vai para o GitHub sozinho. Mesmo assim, verifique antes de enviar seu projeto.
+
+### 4. Rode no seu computador
 
 ```bash
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver a página de comentários funcionando.
+Abra [http://localhost:3000](http://localhost:3000) para ver a página do site. Teste se funciona tudo. A página de status fica em [http://localhost:3000/status](http://localhost:3000/status).
 
-### 7. Faça o Deploy na Vercel
+### 5. Coloque o site no ar usando o vercel
 
-Para que a imagem SVG seja acessível publicamente, o ideal é fazer o deploy do projeto. A Vercel é a opção mais fácil.
+1. Faça upload do projeto em um repositório seu no GitHub.
+2. No [Vercel](https://vercel.com), clique em New Project e escolha esse repositório que você armazenou o projeto.
+3. Antes de clicar em Deploy, abra Environment Variables e adicione as mesmas configurações do passo 3, uma por uma.
+4. Quando fizer toda etapa, só clicar em Deploy.
 
-1.  Envie seu projeto clonado para um novo repositório no seu GitHub.
-2.  Vá para [vercel.com](https://vercel.com) e crie uma conta.
-3.  Crie um **New Project** e importe o repositório do GitHub.
-4.  Durante a configuração, vá para a seção **Environment Variables** e adicione as mesmas variáveis `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` que você usou no arquivo `.env.local`.
-5.  Clique em **Deploy**.
+O Vercel vai te dar um endereço público, tipo `https://[nome-do-seu-projeto].vercel.app`.
 
-Após o deploy, a Vercel fornecerá uma URL pública para o seu projeto (ex: `https://seu-projeto.vercel.app`).
+> Se você mudar uma configuração no Vercel depois, não esqueça de fazer um **Redeploy**. Sem isso, o site continua usando o deploy antigo.
 
-### 8. Use sua Imagem SVG
+### 6. Use as imagens SVG
 
-Sua imagem SVG estará disponível na URL: `https://seu-projeto.vercel.app/api/comments.svg`.
+| Endereço | O que mostra | Tamanho |
+|---|---|---|
+| `/api/comments.svg` | Os 6 comentários mais recentes (os fixados aparecem primeiro) | 228 px de largura |
+| `/api/comments.mobile.svg` | O mesmo, numa versão mais larga para celular | 301 px de largura |
+| `/api/status/svg` | O seu status mais recente | 392 × 76 px |
 
-Você pode incorporá-la em qualquer arquivo Markdown, como o `README.md` do seu perfil do GitHub, da seguinte forma:
+Agora a gente vai converter os comentários em um bloco de imagem svg para colocar no JanitorAI.
+Para fazer isso é muito fácil, lembra da URL do seu site? colocando `https://[nome-do-seu-projeto].vercel.app/api/comments.svg` todos os comentários automáticamente se transformam em uma imagem svg, permitindo que você veja os comentários serem atualizados cada vez que você atualiza sua página.
 
-```markdown
-![Meus Comentários Recentes](https://seu-projeto.vercel.app/api/comments.svg)
+Para colocar esse link no janitorAI, você vai abrir o editor de css e colocar esse código aqui:
+```HTML
+<a class="comments" href="https://[nome-do-seu-projeto].vercel.app/">
+    <img src="https://[nome-do-seu-projeto].vercel.app/api/comments.svg" alt="comments">
+</a>
 ```
 
-## Customização
+As imagens mudam sozinhas quando alguém comenta. Alguns sites guardam a imagem por um tempinho, então a mudança pode demorar um pouco para aparecer.
 
--   **Estilo da Página:** Para alterar o visual da página de comentários, edite os estilos `jsx` dentro do arquivo [`pages/index.js`](pages/index.js).
--   **Estilo do SVG:** Para alterar o visual da imagem SVG (cores, fontes, layout), modifique o código no arquivo [`pages/api/comments.svg.js`](pages/api/comments.svg.js)
+## No dia a dia
+
+**Entrar na página de status.** Abra `/status/login`, digite a senha (`STATUS_PASSWORD`) e depois vá para `/status`. O login dura 30 dias nesse navegador.
+
+(Deprecated) ~~**Curtir ou fixar um comentário.** No Supabase, abra **Table Editor**, escolha a tabela `comments`, ache o comentário e marque `liked_by_owner` (coraçãozinho) ou `pinned` (fixado, vai para o topo) como `true`.~~
+
+**Apagar um comentário.** No supabase, apague a linha dele. Se você criou as tabelas com o script acima, as respostas desse comentário somem junto.
+
+**Adicionar emotes.** Coloque a imagem do emote na pasta `public/emojis`. O nome do arquivo vira o nome do emote, então use só letras, números e os símbolos `_`, `+` e `-`. Formatos aceitos: png, gif, jpg, jpeg e webp. Depois envie para o GitHub e o Vercel atualiza o site. (Cuidado com a quantidade de emotes que você coloca, dependendo, pode causar travamentos em celulares fracos)
+
+## Limites e proteções
+
+- **Tamanhos:** nome com até 30 caracteres, comentário com até 100 e status com até 140. A página mostra os 50 itens mais recentes.
+- **Foto de perfil:** são reduzidas para 128 × 128 antes de enviar, e só são aceitas imagens png, jpeg ou webp (SEM GIFS AINDA!!!!).
+- **Reações:** até 5 por pessoa em cada comentário, e até 20 emotes diferentes em cada comentário.
+- **Spam:** tem um limite de requisições (pedidos) por minuto. Quem erra a senha do status 5 vezes fica bloqueado por 10 minutos.
+- **Privacidade das reações:** o navegador cria um código aleatório e só uma versão embaralhada dele é guardada. Nenhum IP é usado nas reações. Os limites de velocidade dos comentários e do status olham o IP só na memória do servidor, por pouco tempo, e ele não é guardado no banco de dados.
+- **Cuidado:** quem limpa os dados do navegador ganha um código novo e consegue reagir de novo. Sem login, não dá para evitar isso por completo.
+
+## Mudando o visual
+
+| Quero mudar... | Arquivo |
+|---|---|
+| O visual e os textos da página de comentários (cores, regras, título) | `pages/index.js` |
+| O visual e os textos da página de status (inclusive o "about me") | `pages/status/index.js` |
+| A imagem SVG dos comentários | `pages/api/comments.svg.js` |
+| A imagem SVG do status | `pages/api/status/svg.js` |
+| Os emotes | pasta `public/emojis` |
+| A aparência das reações e o texto do botão "+" | `components/Reactions.js` |
+| Os limites (tamanho do texto, número de reações) | `pages/api/comments.js`, `pages/api/status/index.js` e `pages/api/reactions.js` |
+
+## Onde fica cada coisa
+
+```
+pages/index.js       a página de comentários
+pages/status/        a página de status e a página de login
+pages/api/           o "bastidor" do site: recebe os pedidos e conversa com o Supabase
+components/          a barra de reações (emotes)
+lib/                 ajudantes: ligação com o Supabase, login e código do navegador
+public/emojis/       os emotes
+```
+
+## Problemas comuns
+
+- **O Vercel diz `Module not found: Can't resolve '../lib/visitor'`.** A pasta `components` precisa ficar na raiz do projeto, ao lado de `pages` e `lib`, e não dentro de `pages`.
+- **O login do status diz `Status auth not configured`.** Faltam `STATUS_PASSWORD` ou `STATUS_AUTH_TOKEN` nas configurações. Adicione e faça um Redeploy.
+- **As reações dão erro ou não aparecem.** Provavelmente a tabela `reactions` não foi criada. Rode o script do passo 2.
+- **Mudei uma configuração e nada mudou.** No Vercel, faça um Redeploy. No computador, pare o `npm run dev` e rode de novo.
+- **Aparece "Too many requests".** Foram muitos pedidos em um minuto. Espere um pouco e tente de novo.
