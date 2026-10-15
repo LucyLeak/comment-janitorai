@@ -35,6 +35,8 @@ function approximateTextWidth(text, fontSize = 12) {
   return (wideChars * fontSize) + (narrowChars * (fontSize * 0.55));
 }
 
+const SAFE_AVATAR_REGEX = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/;
+
 const ALLOWED_EXTS = new Set(['.png', '.gif', '.jpg', '.jpeg', '.webp']);
 
 function getEmojiMap() {
@@ -243,7 +245,8 @@ export default async function handler(req, res) {
     const nameTokens = tokenizeWithEmojis(status.name || '', emojiMap);
     const messageTokens = tokenizeWithEmojis(status.message || '', emojiMap);
 
-    const hasAvatar = Boolean(status.avatar_url);
+    // Only trust plain base64 image data; anything else could break out of the SVG attribute.
+    const hasAvatar = SAFE_AVATAR_REGEX.test(String(status.avatar_url || ''));
     const textStartX = hasAvatar ? padding + avatarSize + avatarGap : padding;
     const maxTextWidth = width - (padding * 2) - (hasAvatar ? (avatarSize + avatarGap) : 0);
     const wrapped = wrapTokens(messageTokens, maxTextWidth, msgSize, emojiSize);

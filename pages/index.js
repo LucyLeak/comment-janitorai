@@ -20,6 +20,38 @@ const getTimeAgo = (timestamp) => {
   return 'Now';
 };
 
+// Shrinks a picked image to a small square JPEG (128x128) so avatars stay light.
+const AVATAR_SIZE_PX = 128;
+
+const resizeAvatar = (file) =>
+  new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const side = Math.min(img.width, img.height);
+      if (!side) {
+        reject(new Error('Empty image'));
+        return;
+      }
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = AVATAR_SIZE_PX;
+      canvas.height = AVATAR_SIZE_PX;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, AVATAR_SIZE_PX, AVATAR_SIZE_PX);
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, AVATAR_SIZE_PX, AVATAR_SIZE_PX);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not read image'));
+    };
+    img.src = objectUrl;
+  });
+
 export default function Home() {
   const [comments, setComments] = useState([]);
   const [name, setName] = useState('');
@@ -74,7 +106,7 @@ export default function Home() {
     const trimmedMessage = message.trim().slice(0, MAX_CHARS);
     if (!trimmedName || !trimmedMessage) return;
 
-    await fetch('/api/comments', {
+    const res = await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -84,6 +116,12 @@ export default function Home() {
         avatar_url: avatarDataUrl || null,
       }),
     });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      alert(errData.error || 'Could not post your comment. Please try again.');
+      return;
+    }
 
     await refreshComments();
     setName('');
@@ -100,7 +138,7 @@ export default function Home() {
     const trimmedMessage = replyMessage.trim().slice(0, MAX_CHARS);
     if (!trimmedName || !trimmedMessage) return;
 
-    await fetch('/api/comments', {
+    const res = await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -110,6 +148,12 @@ export default function Home() {
         avatar_url: replyAvatarDataUrl || null,
       }),
     });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      alert(errData.error || 'Could not post your reply. Please try again.');
+      return;
+    }
 
     await refreshComments();
     setReplyTo(null);
@@ -129,7 +173,7 @@ export default function Home() {
     setReplyMessage(current => `:${emojiName}: ${current}`.trimStart());
   };
 
-  const handleAvatarFile = (file, isReply = false) => {
+  const handleAvatarFile = async (file, isReply = false) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) return;
     if (file.size > MAX_AVATAR_BYTES) {
@@ -137,16 +181,16 @@ export default function Home() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
+    try {
+      const result = await resizeAvatar(file);
       if (isReply) {
         setReplyAvatarDataUrl(result);
       } else {
         setAvatarDataUrl(result);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      alert('Could not read that image. Try a different one.');
+    }
   };
 
   const renderWithEmojis = (text) => {

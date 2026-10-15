@@ -20,6 +20,39 @@ const getTimeAgo = (timestamp) => {
   return 'Now';
 };
 
+// Shrinks a picked image to a small square JPEG (128x128) so avatars stay light.
+const AVATAR_SIZE_PX = 128;
+const MAX_STORED_AVATAR_LEN = 60 * 1000;
+
+const resizeAvatar = (file) =>
+  new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const side = Math.min(img.width, img.height);
+      if (!side) {
+        reject(new Error('Empty image'));
+        return;
+      }
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = AVATAR_SIZE_PX;
+      canvas.height = AVATAR_SIZE_PX;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, AVATAR_SIZE_PX, AVATAR_SIZE_PX);
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, AVATAR_SIZE_PX, AVATAR_SIZE_PX);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not read image'));
+    };
+    img.src = objectUrl;
+  });
+
 export default function StatusPage() {
   const [statusList, setStatusList] = useState([]);
   const [name, setName] = useState('lucy');
@@ -53,7 +86,8 @@ export default function StatusPage() {
     if (typeof window === 'undefined') return;
     try {
       const storedAvatar = window.localStorage.getItem(AVATAR_STORAGE_KEY);
-      if (storedAvatar) setAvatarDataUrl(storedAvatar);
+      // Skip avatars saved before the 128x128 shrinking existed; the server would reject them.
+      if (storedAvatar && storedAvatar.length <= MAX_STORED_AVATAR_LEN) setAvatarDataUrl(storedAvatar);
     } catch (err) {
       // ignore storage errors
     }
@@ -125,7 +159,7 @@ export default function StatusPage() {
       ? `:${statusEmojiName}: ${trimmedName}`
       : trimmedName;
 
-    await fetch('/api/status', {
+    const res = await fetch('/api/status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -134,6 +168,12 @@ export default function StatusPage() {
         avatar_url: avatarDataUrl || null,
       }),
     });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      alert(errData.error || 'Could not post your status. Please try again.');
+      return;
+    }
 
     await refreshStatus();
     setMessage('');
@@ -151,19 +191,19 @@ export default function StatusPage() {
     setShowStatusEmojiPicker(false);
   };
 
-  const handleAvatarFile = (file) => {
+  const handleAvatarFile = async (file) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) return;
     if (file.size > MAX_AVATAR_BYTES) {
       alert(`Avatar too large. Max ${MAX_AVATAR_MB}MB.`);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
+    try {
+      const result = await resizeAvatar(file);
       setAvatarDataUrl(result);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      alert('Could not read that image. Try a different one.');
+    }
   };
 
   const renderWithEmojis = (text) => {
