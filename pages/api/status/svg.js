@@ -1,4 +1,4 @@
-﻿import { getStatus } from '../../../lib/status-db';
+﻿import { getStatus, getStatusReactions } from '../../../lib/status-db';
 import fs from 'fs';
 import path from 'path';
 
@@ -39,27 +39,48 @@ const SAFE_AVATAR_REGEX = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/]
 
 const ALLOWED_EXTS = new Set(['.png', '.gif', '.jpg', '.jpeg', '.webp']);
 
-function getEmojiMap() {
+// Emote files are only read when this badge actually shows them, and are then
+// kept in memory while the server stays warm, so the badge stays light.
+const emojiDataCache = new Map();
+let emojiFileIndex = null; // emote name -> file name
+
+function getEmojiFileIndex() {
+  if (emojiFileIndex) return emojiFileIndex;
+  const index = new Map();
   try {
     const dir = path.join(process.cwd(), 'public', 'emojis');
-    if (!fs.existsSync(dir)) return {};
-    const files = fs.readdirSync(dir);
-    const map = {};
-
-    files.forEach(file => {
-      const ext = path.extname(file).toLowerCase();
-      if (!ALLOWED_EXTS.has(ext)) return;
-      const name = path.basename(file, ext);
-      const filePath = path.join(dir, file);
-      const data = fs.readFileSync(filePath);
-      const mime = ext === '.jpg' ? 'image/jpeg' : `image/${ext.replace('.', '')}`;
-      map[name] = `data:${mime};base64,${data.toString('base64')}`;
-    });
-
-    return map;
+    if (fs.existsSync(dir)) {
+      fs.readdirSync(dir).forEach(file => {
+        const ext = path.extname(file);
+        if (ALLOWED_EXTS.has(ext.toLowerCase())) index.set(path.basename(file, ext), file);
+      });
+    }
   } catch (err) {
-    return {};
+    // no emotes available: the badge just shows text
   }
+  emojiFileIndex = index;
+  return index;
+}
+
+function getEmojiMap(names) {
+  const map = {};
+  const index = getEmojiFileIndex();
+  for (const name of names) {
+    if (map[name] || !index.has(name)) continue;
+    if (!emojiDataCache.has(name)) {
+      try {
+        const file = index.get(name);
+        const ext = path.extname(file).toLowerCase();
+        const data = fs.readFileSync(path.join(process.cwd(), 'public', 'emojis', file));
+        const mime = ext === '.jpg' ? 'image/jpeg' : `image/${ext.replace('.', '')}`;
+        emojiDataCache.set(name, `data:${mime};base64,${data.toString('base64')}`);
+      } catch (err) {
+        continue;
+      }
+    }
+    map[name] = emojiDataCache.get(name);
+  }
+  return map;
 }
 
 function getBase64PublicImage(fileName) {
@@ -214,6 +235,24 @@ function renderInlineTokens(tokens, x, y, fontSize, emojiSize, textClass) {
   return output;
 }
 
+// Works out which reaction chips fit on one row. Anything that doesn't fit becomes "+N".
+function layoutReactionChips(reactions, emojiMap, startX, maxRight) {
+  const chipGap = 4;
+  const moreWidth = 26; // room kept free for the "+N" label
+  const usable = reactions.filter(r => emojiMap[r.emoji]); // skip emotes whose file was deleted
+  const items = [];
+  let cx = startX;
+  for (let i = 0; i < usable.length; i++) {
+    const label = usable[i].count > 99 ? '99+' : String(usable[i].count);
+    const w = 4 + 12 + 3 + Math.ceil(approximateTextWidth(label, 10)) + 5;
+    const reserve = i < usable.length - 1 ? moreWidth : 0;
+    if (cx + w > maxRight - reserve) break;
+    items.push({ emoji: usable[i].emoji, label, x: cx, w });
+    cx += w + chipGap;
+  }
+  return { items, hidden: usable.length - items.length, nextX: cx };
+}
+
 export default async function handler(req, res) {
   let statusList = [];
   try {
@@ -222,21 +261,40 @@ export default async function handler(req, res) {
     console.error('ERROR in status.svg:', err);
   }
 
-  const emojiMap = getEmojiMap();
+  const status = statusList[0];
+
+  // Reactions on the latest status. If this fails, the badge simply shows none.
+  let reactions = [];
+  if (status && status.id) {
+    try {
+      reactions = await getStatusReactions(status.id);
+    } catch (err) {
+      console.error('ERROR loading status reactions:', err);
+    }
+  }
+
+  // Only the emotes this badge really shows (in the name, the text and the reactions).
+  const neededEmotes = new Set(reactions.map(r => r.emoji));
+  if (status) {
+    for (const text of [status.name, status.message]) {
+      for (const m of String(text || '').matchAll(/:([a-zA-Z0-9_+\-]+):/g)) neededEmotes.add(m[1]);
+    }
+  }
+  const emojiMap = getEmojiMap(neededEmotes);
 
   const width = 392;
-  const height = 76;
+  const baseHeight = 76;
+  let height = baseHeight; // grows only when the reactions row needs more room
   const padding = 8;
   const nameSize = 14;
   const msgSize = 13;
   const lineHeight = 16;
   const emojiSize = 12;
   const nameEmojiSize = 12;
-  const avatarSize = 20;
-  const avatarGap = 6;
+  const avatarSize = 32; // same size as on the status page
+  const avatarGap = 8;
   const backgroundUrl = '';
 
-  const status = statusList[0];
   const renderedLines = [];
   let defs = '';
 
@@ -252,11 +310,19 @@ export default async function handler(req, res) {
     const wrapped = wrapTokens(messageTokens, maxTextWidth, msgSize, emojiSize);
     const blockTop = padding;
     if (hasAvatar) {
+      // A 32px square lined up with the name line and the first line of the status.
+      // The picture fills the square (centered, extra edges cropped) and gets a thin frame.
       const avatarX = padding;
-      const avatarY = blockTop + 6;
+      const avatarY = blockTop + 2;
       defs = `<clipPath id="avatar-clip"><rect x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" rx="2" ry="2" /></clipPath>`;
       renderedLines.push(
+        `<rect x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" rx="2" ry="2" fill="#ffffff" />`
+      );
+      renderedLines.push(
         `<image href="${status.avatar_url}" x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatar-clip)" />`
+      );
+      renderedLines.push(
+        `<rect x="${avatarX + 0.5}" y="${avatarY + 0.5}" width="${avatarSize - 1}" height="${avatarSize - 1}" rx="2" ry="2" fill="none" stroke="#777777" stroke-width="1" />`
       );
     }
 
@@ -265,11 +331,29 @@ export default async function handler(req, res) {
     renderedLines.push(`<text x="${width - padding}" y="${nameY}" class="date" style="font-size:9px;" text-anchor="end">${timeAgo}</text>`);
 
     let y = nameY + lineHeight;
+    let lastBaseline = nameY;
     wrapped.forEach((lineTokens) => {
-      if (y > height - padding) return;
+      if (y > baseHeight - padding) return;
       renderedLines.push(renderLineTokens(lineTokens, textStartX, y, msgSize, emojiSize));
+      lastBaseline = y;
       y += lineHeight;
     });
+
+    // Reaction chips: one small row under the status text (emote + how many people used it).
+    const chipHeight = 16;
+    const chips = layoutReactionChips(reactions, emojiMap, textStartX, width - padding);
+    if (chips.items.length > 0) {
+      const rowTop = lastBaseline + 6;
+      chips.items.forEach(({ emoji, label, x, w }) => {
+        renderedLines.push(`<rect x="${x + 0.5}" y="${rowTop + 0.5}" width="${w - 1}" height="${chipHeight - 1}" rx="3" ry="3" fill="#f2f2f2" stroke="#9a9a9a" stroke-width="1" />`);
+        renderedLines.push(`<image href="${emojiMap[emoji]}" x="${x + 4}" y="${rowTop + 2}" width="12" height="12" />`);
+        renderedLines.push(`<text x="${x + 4 + 12 + 3}" y="${rowTop + 12}" class="count" style="font-size:10px;">${escapeXML(label)}</text>`);
+      });
+      if (chips.hidden > 0) {
+        renderedLines.push(`<text x="${chips.nextX + 2}" y="${rowTop + 12}" class="count" style="font-size:10px;">+${chips.hidden}</text>`);
+      }
+      height = Math.max(baseHeight, rowTop + chipHeight + padding);
+    }
   } else {
     renderedLines.push(`<text x="${padding}" y="${padding + 16}" class="msg" style="font-size:11px;">no status yet</text>`);
   }
@@ -283,6 +367,7 @@ export default async function handler(req, res) {
     .name { font-family: "MS UI Gothic", sans-serif; fill: #000000; font-weight: bold; }
     .date { font-family: monospace; fill: #000000; }
     .msg { font-family: "MS UI Gothic", sans-serif; fill: #000000; }
+    .count { font-family: "MS UI Gothic", sans-serif; fill: #000000; font-weight: bold; }
     ]]>
   </style>
   ${renderedLines.join('\n')}
