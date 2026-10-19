@@ -238,19 +238,36 @@ function renderInlineTokens(tokens, x, y, fontSize, emojiSize, textClass) {
 // Works out which reaction chips fit on one row. Anything that doesn't fit becomes "+N".
 function layoutReactionChips(reactions, emojiMap, startX, maxRight) {
   const chipGap = 4;
-  const moreWidth = 26; // room kept free for the "+N" label
+  const moreGap = 2;
+  const moreTextWidth = (hidden) => Math.ceil(approximateTextWidth(`+${hidden}`, 12));
   const usable = reactions.filter(r => emojiMap[r.emoji]); // skip emotes whose file was deleted
   const items = [];
   let cx = startX;
-  for (let i = 0; i < usable.length; i++) {
-    const label = usable[i].count > 99 ? '99+' : String(usable[i].count);
+
+  for (const reaction of usable) {
+    const label = reaction.count > 99 ? '99+' : String(reaction.count);
     const w = 12 + 4 + Math.ceil(approximateTextWidth(label, 12)) + 12 + 2;
-    const reserve = i < usable.length - 1 ? moreWidth : 0;
-    if (cx + w > maxRight - reserve) break;
-    items.push({ emoji: usable[i].emoji, label, x: cx, w });
+    if (cx + w > maxRight) break;
+
+    items.push({ emoji: reaction.emoji, label, x: cx, w });
     cx += w + chipGap;
   }
-  return { items, hidden: usable.length - items.length, nextX: cx };
+
+  // Reserve the actual width of "+N", not a fixed guess. If the hidden count
+  // grows from one digit to two, remove chips until both the chips and label fit.
+  let hidden = usable.length - items.length;
+  while (hidden > 0 && items.length > 0) {
+    const last = items[items.length - 1];
+    const indicatorWidth = moreGap + moreTextWidth(hidden);
+    if (last.x + last.w + chipGap + indicatorWidth <= maxRight) break;
+
+    items.pop();
+    hidden = usable.length - items.length;
+  }
+
+  cx = items.length ? items[items.length - 1].x + items[items.length - 1].w + chipGap : startX;
+  const moreX = cx + moreGap;
+  return { items, hidden, moreX };
 }
 
 export default async function handler(req, res) {
@@ -338,7 +355,7 @@ export default async function handler(req, res) {
     // Reaction chips: one small row under the status text (emote + how many people used it).
     const chipHeight = 22;
     const chips = layoutReactionChips(reactions, emojiMap, textStartX, width - padding);
-    if (chips.items.length > 0) {
+    if (chips.items.length > 0 || chips.hidden > 0) {
       const rowTop = lastBaseline + 6;
       chips.items.forEach(({ emoji, label, x, w }) => {
         renderedLines.push(`<rect x="${x + 0.5}" y="${rowTop + 0.5}" width="${w - 1}" height="${chipHeight - 1}" fill="#f2f2f2" stroke="#9a9a9a" stroke-width="1" />`);
@@ -346,7 +363,7 @@ export default async function handler(req, res) {
         renderedLines.push(`<text x="${x + 6 + 12 + 4}" y="${rowTop + 16}" class="count" style="font-size:12px;">${escapeXML(label)}</text>`);
       });
       if (chips.hidden > 0) {
-        renderedLines.push(`<text x="${chips.nextX + 2}" y="${rowTop + 16}" class="count" style="font-size:12px;">+${chips.hidden}</text>`);
+        renderedLines.push(`<text x="${chips.moreX}" y="${rowTop + 16}" class="count" style="font-size:12px;">+${chips.hidden}</text>`);
       }
       height = Math.max(baseHeight, rowTop + chipHeight + padding);
     }
