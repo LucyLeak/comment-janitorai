@@ -244,7 +244,7 @@ function layoutReactionChips(reactions, emojiMap, startX, maxRight) {
   let cx = startX;
   for (let i = 0; i < usable.length; i++) {
     const label = usable[i].count > 99 ? '99+' : String(usable[i].count);
-    const w = 4 + 12 + 3 + Math.ceil(approximateTextWidth(label, 10)) + 5;
+    const w = 12 + 4 + Math.ceil(approximateTextWidth(label, 12)) + 12 + 2;
     const reserve = i < usable.length - 1 ? moreWidth : 0;
     if (cx + w > maxRight - reserve) break;
     items.push({ emoji: usable[i].emoji, label, x: cx, w });
@@ -314,16 +314,12 @@ export default async function handler(req, res) {
       // The picture fills the square (centered, extra edges cropped) and gets a thin frame.
       const avatarX = padding;
       const avatarY = blockTop + 2;
-      defs = `<clipPath id="avatar-clip"><rect x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" rx="2" ry="2" /></clipPath>`;
-      renderedLines.push(
-        `<rect x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" rx="2" ry="2" fill="#ffffff" />`
-      );
-      renderedLines.push(
-        `<image href="${status.avatar_url}" x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatar-clip)" />`
-      );
-      renderedLines.push(
-        `<rect x="${avatarX + 0.5}" y="${avatarY + 0.5}" width="${avatarSize - 1}" height="${avatarSize - 1}" rx="2" ry="2" fill="none" stroke="#777777" stroke-width="1" />`
-      );
+
+      defs = `<clipPath id="avatar-clip"><rect x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" /></clipPath>`;
+
+      renderedLines.push(`<rect x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" fill="#fff" />`);
+      renderedLines.push(`<image href="${status.avatar_url}" x="${avatarX}" y="${avatarY}" width="${avatarSize}" height="${avatarSize}" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatar-clip)" />`);
+      renderedLines.push(`<rect x="${avatarX + 0.5}" y="${avatarY + 0.5}" width="${avatarSize - 1}" height="${avatarSize - 1}" fill="none" stroke="#777" stroke-width="1" />`);
     }
 
     const nameY = blockTop + 14;
@@ -340,17 +336,17 @@ export default async function handler(req, res) {
     });
 
     // Reaction chips: one small row under the status text (emote + how many people used it).
-    const chipHeight = 16;
+    const chipHeight = 22;
     const chips = layoutReactionChips(reactions, emojiMap, textStartX, width - padding);
     if (chips.items.length > 0) {
       const rowTop = lastBaseline + 6;
       chips.items.forEach(({ emoji, label, x, w }) => {
-        renderedLines.push(`<rect x="${x + 0.5}" y="${rowTop + 0.5}" width="${w - 1}" height="${chipHeight - 1}" rx="3" ry="3" fill="#f2f2f2" stroke="#9a9a9a" stroke-width="1" />`);
-        renderedLines.push(`<image href="${emojiMap[emoji]}" x="${x + 4}" y="${rowTop + 2}" width="12" height="12" />`);
-        renderedLines.push(`<text x="${x + 4 + 12 + 3}" y="${rowTop + 12}" class="count" style="font-size:10px;">${escapeXML(label)}</text>`);
+        renderedLines.push(`<rect x="${x + 0.5}" y="${rowTop + 0.5}" width="${w - 1}" height="${chipHeight - 1}" fill="#f2f2f2" stroke="#9a9a9a" stroke-width="1" />`);
+        renderedLines.push(`<image href="${emojiMap[emoji]}" x="${x + 6}" y="${rowTop + 5}" width="12" height="12" />`);
+        renderedLines.push(`<text x="${x + 6 + 12 + 4}" y="${rowTop + 16}" class="count" style="font-size:12px;">${escapeXML(label)}</text>`);
       });
       if (chips.hidden > 0) {
-        renderedLines.push(`<text x="${chips.nextX + 2}" y="${rowTop + 12}" class="count" style="font-size:10px;">+${chips.hidden}</text>`);
+        renderedLines.push(`<text x="${chips.nextX + 2}" y="${rowTop + 16}" class="count" style="font-size:12px;">+${chips.hidden}</text>`);
       }
       height = Math.max(baseHeight, rowTop + chipHeight + padding);
     }
